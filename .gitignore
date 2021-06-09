@@ -1,0 +1,6 @@
+*.dat
+*.prefs
+*.jfr
+.classpath
+.project
+.settings
