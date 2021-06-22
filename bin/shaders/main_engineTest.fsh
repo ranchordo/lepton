@@ -1,16 +1,23 @@
-#version 330 core
+#version 430 core
 
 #define pi 3.1415926535897932384
-#define MAX_LIGHTS 50
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 gPosition;
 layout (location = 2) out vec4 gNormal;
 //layout (location = 3) out vec4 gAOMul;
 
-uniform int types[MAX_LIGHTS]=int[MAX_LIGHTS](0);
-uniform vec3 prop[MAX_LIGHTS]=vec3[MAX_LIGHTS](vec3(0,0,0));
-uniform vec4 intensities[MAX_LIGHTS]=vec4[MAX_LIGHTS](vec4(0,0,0,1));
+struct Light {
+	float type;
+	vec3 prop;
+	vec4 l_intensity;
+};
+
+layout (std140) buffer lights_buffer {
+	Light lights_arr[];
+};
+
+uniform int num_lights=0;
 uniform float useLighting=2;
 uniform mat4 world2view=mat4(1.0);
 
@@ -42,35 +49,34 @@ void main() {
 	}
 	vec3 ambient=vec3(0,0,0);
 	if(useLighting>=1) {
-		for(int i=0;i<MAX_LIGHTS;i++) {
-			if(types[i]==0) {
-				break;
-			} else if(types[i]==1) {
+		for(int i=0;i<num_lights;i++) {
+			Light light=lights_arr[i];
+			if(round(light.type)==1) {
 				//Ambient light
-				intensity_in=intensity_in+vec4(intensities[i].xyz,0);
-				ambient+=intensities[i].xyz;
-			} else if(types[i]==2) {
+				intensity_in=intensity_in+vec4(light.l_intensity.xyz,0);
+				ambient+=light.l_intensity.xyz;
+			} else if(round(light.type)==2) {
 				//Directional light
-				vec3 lightVector=normalize(prop[i]);
+				vec3 lightVector=normalize(light.prop);
 				float dot_prod=max(0.0,dot(normal,lightVector));
 				vec3 viewdir=normalize(campos-world_position);
 				//vec3 reflectdir=reflect(-lightVector,normal);
 				vec3 halfdir=normalize(lightVector+viewdir);
 				float spec = pow(max(dot(normal,halfdir), 0.0), material_v.y*4.0);
-				intensity_in=intensity_in+vec4(intensities[i].xyz*dot_prod,0);
-				intensity_in=intensity_in+vec4(intensities[i].xyz*spec*material_v.x,0);
-			} else if(types[i]==3) {
+				intensity_in=intensity_in+vec4(light.l_intensity.xyz*dot_prod,0);
+				intensity_in=intensity_in+vec4(light.l_intensity.xyz*spec*material_v.x,0);
+			} else if(round(light.type)==3) {
 				//Positional light
-				float r=sqrt(pow(world_position.x-prop[i].x,2)+pow(world_position.y-prop[i].y,2)+pow(world_position.z-prop[i].z,2));
-				vec3 lightVector=normalize(world_position-prop[i]);
+				float r=sqrt(pow(world_position.x-light.prop.x,2)+pow(world_position.y-light.prop.y,2)+pow(world_position.z-light.prop.z,2));
+				vec3 lightVector=normalize(world_position-light.prop);
 				float dotprod=max(0.0,-dot(normal,lightVector));
-				intensity_in=intensity_in+vec4(intensities[i].xyz*dotprod*(1.0/pow(r,2)),0);
+				intensity_in=intensity_in+vec4(light.l_intensity.xyz*dotprod*(1.0/pow(r,2)),0);
 				
 				vec3 viewdir=normalize(campos-world_position);
 				//vec3 reflectdir=reflect(-lightVector,normal);
 				vec3 halfdir=normalize(-lightVector+viewdir);
 				float spec = pow(max(dot(normal,halfdir), 0.0), material_v.y*4.0);
-				intensity_in=intensity_in+vec4(intensities[i].xyz*spec*material_v.x,0);
+				intensity_in=intensity_in+vec4(light.l_intensity.xyz*spec*material_v.x,0);
 			}
 		}
 	}

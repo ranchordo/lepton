@@ -1,12 +1,14 @@
 package lepton.engine.rendering.lighting;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.lwjgl.BufferUtils;
 
+import static org.lwjgl.opengl.GL46.GL_WRITE_ONLY;
+
+import lepton.cpshlib.main.SSBO;
 import lepton.cpshlib.main.ShaderDataCompatible;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.util.Util;
@@ -18,24 +20,21 @@ import lepton.util.advancedLogger.Logger;
 public class Lighting {
 	public static final int MAX_LIGHTS=50;
 	private static HashSet<Light> lights=new HashSet<Light>();
-	private static int[] types_arr;
-	private static float[] prop_arr;
-	private static float[] intensities_arr;
 	
 	public static void addLight(Light light) {
 		if(light==null) {
 			Logger.log(4,"Adding null light? What is wrong with you?");
 		}
 		lights.add(light);
-		doUniforms();
+		reinitBuffers();
 	}
 	public static void removeLight(Light light) {
 		lights.remove(light);
-		doUniforms();
+		reinitBuffers();
 	}
 	public static void clear() {
 		lights.clear();
-		doUniforms();
+		reinitBuffers();
 	}
 	/**
 	 * Apply lighting data to a shader
@@ -43,72 +42,97 @@ public class Lighting {
 	public static void apply() {
 		apply(GLContextInitializer.activeShader);
 	}
-	private static IntBuffer types_buffer;
-	private static FloatBuffer prop_buffer;
-	private static FloatBuffer int_buffer;
+	private static FloatBuffer fbuffer;
+	private static boolean firstSSBOInitialized=false;
+	private static SSBO firstSSBO;
 	/**
 	 * Apply lighting data to a specific shader.
 	 */
 	public static void apply(ShaderDataCompatible shader) {
 		if(shader==null) {
-			Logger.log(3,"Lighting.apply: No shader is active.");
+			Logger.log(3,"Lighting.apply(ShaderDataCompatible): Input shader is null. This commonly means that no shader was active when apply() was called.");
 			return;
 		}
-		shader.setUniformiv("types",types_buffer);
-		shader.setUniform3fv("prop",prop_buffer);
-		shader.setUniform4fv("intensities",int_buffer);
+		if(fbuffer==null) {
+			Logger.log(4,"Lighting buffer has not yet been populated.");
+		}
+		//Initialize the lighting if not initialized:
+		if(!shader.lightingInitialized) {
+			if(!firstSSBOInitialized) {
+				firstSSBO=shader.generateNewSSBO("lights_buffer",fbuffer.capacity()*4);
+				shader.setLightingSSBO(firstSSBO);
+				firstSSBOInitialized=true;
+			} else {
+				shader.setLightingSSBO(shader.generateFromExistingSSBO("lights_buffer",firstSSBO));
+			}
+			shader.lightingInitialized=true;
+		}
+		if(firstSSBO==null) {
+			Logger.log(4,"xkcd.com/2200");
+		}
+		ShaderDataCompatible.updateSSBOData(fbuffer,firstSSBO);
+		if(shader.getLightingDataSSBO()==null) {
+			Logger.log(4,"LightingDataSSBO is null. Uggghh");
+		}
+		shader.setUniform1i("num_lights",fbuffer.capacity()/Light.LIGHT_SIZE_FLOATS);
+		shader.applySSBO(shader.getLightingDataSSBO());
 	}
 	/**
 	 * Update the lighting data for a single light.
 	 */
 	public static void updateUniforms(Light light) {
-		prop_arr[light.propPointer]=light.prop.x;
-		prop_arr[light.propPointer+1]=light.prop.y;
-		prop_arr[light.propPointer+2]=light.prop.z;
-		
-		intensities_arr[light.intensityPointer]=light.intensity.x;
-		intensities_arr[light.intensityPointer+1]=light.intensity.y;
-		intensities_arr[light.intensityPointer+2]=light.intensity.z;
-		intensities_arr[light.intensityPointer+3]=light.intensity.w;
-		
-		Util.asFloatBuffer(prop_arr,prop_buffer);
-		Util.asFloatBuffer(intensities_arr,int_buffer);
+		FloatBuffer fb=ShaderDataCompatible.mappify(firstSSBO,GL_WRITE_ONLY); {
+			int index=light.lightID*Light.LIGHT_SIZE_FLOATS;
+			fb.position(index);
+			fbuffer.put((float)light.type);
+			
+			fbuffer.put(0.0f);
+			fbuffer.put(0.0f);
+			fbuffer.put(0.0f);
+			
+			fbuffer.put(light.prop.x);
+			fbuffer.put(light.prop.y);
+			fbuffer.put(light.prop.z);
+			fbuffer.put(0.0f);
+			
+			fbuffer.put(light.intensity.x);
+			fbuffer.put(light.intensity.y);
+			fbuffer.put(light.intensity.z);
+			fbuffer.put(light.intensity.w);
+		} ShaderDataCompatible.unMappify();
+	}
+	public static void updateUniforms() {
+		reinitBuffers();
 	}
 	/**
-	 * Whenever you add or remove a light. Automatically done in addLight and removeLight.
+	 * Whenever you add or remove a light. ***Automatically done in addLight and removeLight***.
 	 */
-	public static void doUniforms() {
-		ArrayList<Integer> types=new ArrayList<Integer>();
-		ArrayList<Float> prop_exp=new ArrayList<Float>();
-		ArrayList<Float> intensities_exp=new ArrayList<Float>();
-		for(Light light : lights) {
-			types.add(light.type);
-			
-			light.propPointer=prop_exp.size();
-			prop_exp.add(light.prop.x);
-			prop_exp.add(light.prop.y);
-			prop_exp.add(light.prop.z);
-			
-			light.intensityPointer=intensities_exp.size();
-			intensities_exp.add(light.intensity.x);
-			intensities_exp.add(light.intensity.y);
-			intensities_exp.add(light.intensity.z);
-			intensities_exp.add(light.intensity.w);
+	public static void reinitBuffers() {
+		if(fbuffer==null) {
+			fbuffer=BufferUtils.createFloatBuffer(Light.LIGHT_SIZE_FLOATS*lights.size());
 		}
-		types_arr=new int[MAX_LIGHTS];
-		prop_arr=new float[MAX_LIGHTS*3];
-		intensities_arr=new float[MAX_LIGHTS*4];
-		
-		for(int i=0;i<types.size();i++) {types_arr[i]=types.get(i);}
-		for(int i=0;i<prop_exp.size();i++) {prop_arr[i]=prop_exp.get(i);}
-		for(int i=0;i<intensities_exp.size();i++) {intensities_arr[i]=intensities_exp.get(i);}
-		
-		types_buffer=BufferUtils.createIntBuffer(types_arr.length);
-		prop_buffer=BufferUtils.createFloatBuffer(prop_arr.length);
-		int_buffer=BufferUtils.createFloatBuffer(intensities_arr.length);
-		
-		Util.asIntBuffer(types_arr,types_buffer);
-		Util.asFloatBuffer(prop_arr,prop_buffer);
-		Util.asFloatBuffer(intensities_arr,int_buffer);
+		if(fbuffer.capacity()!=Light.LIGHT_SIZE_FLOATS*lights.size()) {
+			fbuffer=BufferUtils.createFloatBuffer(Light.LIGHT_SIZE_FLOATS*lights.size());
+		}
+		int id=0;
+		fbuffer.position(0);
+		for(Light light : lights) {
+			fbuffer.put((float)light.type);
+			
+			fbuffer.put(0.0f);
+			fbuffer.put(0.0f);
+			fbuffer.put(0.0f);
+			
+			light.lightID=id;
+			fbuffer.put(light.prop.x);
+			fbuffer.put(light.prop.y);
+			fbuffer.put(light.prop.z);
+			fbuffer.put(0.0f);
+			
+			fbuffer.put(light.intensity.x);
+			fbuffer.put(light.intensity.y);
+			fbuffer.put(light.intensity.z);
+			fbuffer.put(light.intensity.w);
+		}
 	}
 }

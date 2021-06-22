@@ -98,6 +98,9 @@ public class EngineTest {
 		Lighting.addLight(new Light(Light.LIGHT_AMBIENT,0,0,0, amb,amb,amb,1));
 		cube.geo.p.addToSimulation(Physics.EVERYTHING,Physics.EVERYTHING);
 		floor.geo.p.addToSimulation(Physics.EVERYTHING,Physics.EVERYTHING);
+		
+		GLContextInitializer.defaultMainShader=new Shader("main_engineTest");
+		
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			GLContextInitializer.timeCalcStart();
 			Physics.step();

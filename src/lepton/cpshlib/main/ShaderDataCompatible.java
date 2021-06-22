@@ -27,9 +27,33 @@ public abstract class ShaderDataCompatible {
 	private int lastBindingLimits=0;
 	private boolean programSynced=false;
 	private int program_internal;
+	
+	private String initialFname="ERROR IN NAME";
+	
+	/**
+	 * No usey.
+	 */
+	public void setInitialFname(String ifn) {
+		initialFname=ifn;
+	}
+	/**
+	 * No usey.
+	 */
+	public void setLightingSSBO(SSBO lssbo) {
+		lightingSSBO=lssbo;
+	}
+	public SSBO getLightingDataSSBO() {
+		return lightingSSBO;
+	}
+	
+	/**
+	 * Used internally for keeping track of light states. Do not change. Queries are probably useless unless you're doing something weird
+	 */
+	public boolean lightingInitialized=false;
+	private SSBO lightingSSBO=null;
 	public abstract void bind();
 	/**
-	 * For use on shader initialization. Don't use unless you're creating your own shader management classes (ComputeShader, Shader, etc).
+	 * For use on shader initialization. Don't use unless you're creating your own shader management classes (like ComputeShader, Shader, etc).
 	 */
 	public void syncRequiredShaderDataValues(int program, boolean bindErrorPolicy) {
 		if(programSynced) {
@@ -79,12 +103,12 @@ public abstract class ShaderDataCompatible {
 		out.buffer=glGenBuffers();
 		out.id=SSBOId;
 		if(SSBOId>=Math.min(0xFF,getBindingLimits())) {
-			throw new IllegalStateException("Ya hit the SSBO limit.");
+			throw new IllegalStateException("Ya hit the SSBO limit. Nice");
 		}
 		SSBOId++;
 		out.location=getResourceLocation(name);
 		if(out.location==-1) {
-			Logger.log(3,name+" is not a valid shader SSBO binding point.");
+			Logger.log(3,name+" is not a valid shader SSBO binding point (generateNewSSBO). (From shader "+initialFname+")");
 		}
 		ssbo.put(name,out);
 		glShaderStorageBlockBinding(program(), out.location, out.id);
@@ -99,12 +123,12 @@ public abstract class ShaderDataCompatible {
 		out.buffer=in.buffer;
 		out.id=SSBOId;
 		if(SSBOId>=Math.min(0xFF,getBindingLimits())) {
-			throw new IllegalStateException("Ya hit the SSBO limit.");
+			throw new IllegalStateException("Ya hit the SSBO limit. Nice");
 		}
 		SSBOId++;
 		out.location=getResourceLocation(name);
 		if(out.location==-1) {
-			Logger.log(3,name+" is not a valid shader SSBO binding point.");
+			Logger.log(3,name+" is not a valid shader SSBO binding point (generateFromExistingSSBO). From shader "+initialFname);
 		}
 		ssbo.put(name,out);
 		glShaderStorageBlockBinding(program(), out.location, out.id);
@@ -126,6 +150,7 @@ public abstract class ShaderDataCompatible {
 				Logger.log(4,"Ladies and gentlemen: We have issues.");
 			}
 			if(data.capacity()!=buffer.capacity()) {
+				Logger.log(3,"Uh... you realize this is a method for *copying*, right? Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
 				throw new IllegalArgumentException("Uh... you realize this is a method for *copying*, right? Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
 			}
 			buffer.position(0);
@@ -146,11 +171,11 @@ public abstract class ShaderDataCompatible {
 	}
 	private static boolean bufferMapped=false;
 	/**
-	 * Map a buffer in GPU-side storage to CPU-side storage for modification. MAKE SURE TO CALL unMappify()!!!!!
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
 	 */
 	public static FloatBuffer mappify(SSBO ssbo, int mode) {
 		if(bufferMapped) {
-			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer. Is it really that difficult?");
+			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer when you're done. Is it really that difficult?");
 		}
 		FloatBuffer ret=null;
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo.buffer);

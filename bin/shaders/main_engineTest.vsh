@@ -2,9 +2,6 @@
 #define pi 3.1415926535897932384
 #define MAX_LIGHTS 50
 
-uniform int types[MAX_LIGHTS]=int[MAX_LIGHTS](0);
-uniform vec3 prop[MAX_LIGHTS]=vec3[MAX_LIGHTS](vec3(0,0,0));
-uniform vec4 intensities[MAX_LIGHTS]=vec4[MAX_LIGHTS](vec4(0,0,0,1));
 uniform mat4 master_matrix=mat4(1.0);
 uniform mat4 world2view=mat4(1.0);
 uniform mat4 proj_matrix=mat4(1.0);

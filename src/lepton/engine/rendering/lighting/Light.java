@@ -8,6 +8,7 @@ public class Light {
 	public static final int LIGHT_AMBIENT=1;
 	public static final int LIGHT_DIRECTION=2;
 	public static final int LIGHT_POSITION=3;
+	public static final int LIGHT_SIZE_FLOATS=1+4+4 +3;
 	public Light(int type_, float x, float y, float z, float r, float g, float b, float a) {
 		this.intensity=new Vector4f(r,g,b,a);
 		this.prop=new Vector3f(x,y,z);
@@ -24,6 +25,5 @@ public class Light {
 	int type=0;
 	public Vector4f intensity;
 	public Vector3f prop;
-	public int propPointer=0;
-	public int intensityPointer=0;
+	public int lightID;
 }

@@ -93,6 +93,7 @@ public class Shader extends ShaderDataCompatible {
 			System.err.println(glGetProgramInfoLog(program));
 			System.exit(1);
 		}
+		this.setInitialFname(fname);
 		Logger.log(0,"Loaded shader \""+fname+"\" successfully.");
 	}
 	public void bind() {

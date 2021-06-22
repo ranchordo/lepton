@@ -155,8 +155,6 @@ public class GLContextInitializer {
 		setFOV(90);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		
-		defaultMainShader=new Shader("main");
-		
 		//Init handlers:
 		BloomHandler.init();
 	}

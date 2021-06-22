@@ -10,6 +10,7 @@ import javax.vecmath.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import lepton.engine.rendering.GLContextInitializer;
+import lepton.engine.rendering.lighting.Lighting;
 import lepton.util.advancedLogger.Logger;
 
 public class ComputeShader extends ShaderDataCompatible {
@@ -69,6 +70,7 @@ public class ComputeShader extends ShaderDataCompatible {
 	public void bind() {
 		glUseProgram(program);
 		GLContextInitializer.activeShader=this;
+		Lighting.apply();
 	}
 	private String readFile(String fname) {
 		StringBuilder string=new StringBuilder();
