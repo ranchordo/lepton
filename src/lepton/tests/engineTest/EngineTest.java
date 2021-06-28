@@ -27,8 +27,12 @@ import lepton.engine.rendering.lighting.Lighting;
 import lepton.optim.objpoollib.PoolStrainer;
 import lepton.util.CleanupTasks;
 import lepton.util.InputHandler;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
+import lepton.util.advancedLogger.ConsoleWindowHandler;
+import lepton.util.advancedLogger.LogHandler;
+import lepton.util.advancedLogger.LogLevel;
 import lepton.util.advancedLogger.Logger;
+import lepton.util.console.ConsoleWindow;
 
 public class EngineTest {
 	
@@ -51,12 +55,27 @@ public class EngineTest {
 		}
 	}
 	/**
+	 * Method given to ConsoleWindow's onCommand for execution on command receipt.
+	 */
+	public void recieveCommand(String command) {
+		//System.out.println("Got console command: "+command);
+	}
+	/**
 	 * Execute the main engine test.
 	 */
 	public void Main() {
 		Logger.setCleanupTask(()->CleanupTasks.cleanUp());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
 		CleanupTasks.add(()->Audio.cleanUp()); //----------IMPORTANT----------//
+		
+		ConsoleWindow mainConsoleWindow=new ConsoleWindow(false,800,600,"Engine test console",(s)->this.recieveCommand(s),"Engine test console ready.\nStarting engine test.");
+		mainConsoleWindow.setVisible(true); //Console windows aren't required. Disable this one by deleting this whole group of lines.
+		LogHandler consoleWindowHandler=new ConsoleWindowHandler(mainConsoleWindow);
+		Logger.handlers.add(consoleWindowHandler);
+		CleanupTasks.add(()->{if(LogLevel.isFatal()) {mainConsoleWindow.waitForClose();}}); //Wait for the console window to close if a fatal error lead to an exit
+		CleanupTasks.add(()->mainConsoleWindow.close());
+		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
+		
 		GLContextInitializer.initializeGLContext(true,500,500,false,"Main Engine test. Includes physics, graphics, and sound.");
 		Shader screen=new Shader("screen");
 		Shader screen_basic_bloom=new Shader("screen_basic_bloom");
@@ -77,8 +96,8 @@ public class EngineTest {
 		
 		Audio.init();
 		
-		EngineTestFloor floor=new EngineTestFloor(new Vector3f(0,-10,0),Util.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(-90))));
-		EngineTestCube cube=new EngineTestCube(new Vector3f(0,0,0),Util.AxisAngle_np(new AxisAngle4f(1,0,0,0)));
+		EngineTestFloor floor=new EngineTestFloor(new Vector3f(0,-10,0),LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(-90))));
+		EngineTestCube cube=new EngineTestCube(new Vector3f(0,0,0),LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,0)));
 		cube.initSoundtrack();
 		cube.initGeo();
 		cube.initPhysics();
@@ -90,7 +109,7 @@ public class EngineTest {
 		float g=250.0f/255.0f;
 		float b=244.0f/255.0f;
 		float amb=0.1f;
-		GLContextInitializer.cameraTransform=new Transform(new Matrix4f(Util.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1));
+		GLContextInitializer.cameraTransform=new Transform(new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1));
 		Matrix4f t=GLContextInitializer.cameraTransform.getMatrix(new Matrix4f());
 		t.invert();
 		GLContextInitializer.cameraTransform.set(t);
@@ -153,6 +172,10 @@ public class EngineTest {
 	}
 	public static void main(String[] args) {
 		EngineTest m=new EngineTest();
-		m.Main();
+		try {
+			m.Main();
+		} catch (Exception e) {
+			Logger.log(4,e.toString()+", Logger-based stack trace is incorrect.",e);
+		}
 	}
 }

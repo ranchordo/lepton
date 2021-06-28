@@ -2,7 +2,7 @@ package lepton.optim.tensorlib.main;
 
 import java.util.ArrayList;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 
 public class Tensor<T extends Cloneable> {
@@ -39,7 +39,7 @@ public class Tensor<T extends Cloneable> {
 			currpos[j]=0;
 		}
 		for(int j=0;j<t;j++) {
-			elements.add(new TensorElement<T>(Util.cloneObject(i),cloneIntArray(currpos)));
+			elements.add(new TensorElement<T>(LeptonUtil.cloneObject(i),cloneIntArray(currpos)));
 			if(j!=t-1) {carry(currpos,dim,0);}
 		}
 	}

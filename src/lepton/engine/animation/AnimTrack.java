@@ -10,7 +10,7 @@ import javax.vecmath.Vector3f;
 import com.bulletphysics.linearmath.Transform;
 
 import lepton.engine.rendering.GLContextInitializer;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 public class AnimTrack {
 	public static final int LOOP=1;
@@ -19,8 +19,8 @@ public class AnimTrack {
 	private int endMode;
 	private float counter=0;
 	public ArrayList<Keyframe> keyframes=new ArrayList<Keyframe>();
-	public Transform blend2space=new Transform(new Matrix4f(Util.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(270))),new Vector3f(0,0,0),1.0f));
-	public Transform addTransform=new Transform(new Matrix4f(Util.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(0))),new Vector3f(0,0,0),1.0f));
+	public Transform blend2space=new Transform(new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(270))),new Vector3f(0,0,0),1.0f));
+	public Transform addTransform=new Transform(new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(0))),new Vector3f(0,0,0),1.0f));
 	public boolean useAddTransform=true;
 	private Transform ret=new Transform();
 	public void setPlaybackFPS(float nf) {

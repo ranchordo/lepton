@@ -1,6 +1,7 @@
 package lepton.tests;
 
 import lepton.optim.tensorlib.main.Tensor;
+import lepton.util.advancedLogger.Logger;
 import lepton.util.cloneabletypes.ClFloat;
 
 public class TensorLibTest {
@@ -10,15 +11,15 @@ public class TensorLibTest {
 		//CFloat is a float wrapper that is cloneable, which is a necessity for tensor initialization.
 		Tensor<ClFloat> f=new Tensor<ClFloat>(2,new ClFloat(0),10,10);
 		
-		System.out.println(f.getElement(0,0)); //getElement returns the TensorElement itself
-		System.out.println(f.get(0,0)); //get just returns the CFloat
+		Logger.log(0,""+f.getElement(0,0)); //getElement returns the TensorElement itself
+		Logger.log(0,""+f.get(0,0)); //get just returns the CFloat
 		
 		f.get(0,0).v=5.0f;
 		f.getElement(1,2).internal.v=4.0f;
-		System.out.println(f.getElement(0,0).internal.v);
-		System.out.println(f.get(1,2).v);
-		System.out.println(f.getElement(1,2).pos[0]+", "+f.getElement(1,2).pos[1]); //Access the position of a TensorElement
-		System.out.println(f.rank);
-		System.out.println(f.dim[0]+"x"+f.dim[1]);
+		Logger.log(0,""+f.getElement(0,0).internal.v);
+		Logger.log(0,""+f.get(1,2).v);
+		Logger.log(0,""+f.getElement(1,2).pos[0]+", "+f.getElement(1,2).pos[1]); //Access the position of a TensorElement
+		Logger.log(0,""+f.rank);
+		Logger.log(0,""+f.dim[0]+"x"+f.dim[1]);
 	}
 }

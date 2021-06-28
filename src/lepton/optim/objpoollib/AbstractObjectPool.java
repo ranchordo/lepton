@@ -3,7 +3,7 @@ package lepton.optim.objpoollib;
 import java.util.ArrayList;
 import java.util.List;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -47,13 +47,13 @@ public abstract class AbstractObjectPool<T> {
 			//If the element's timeout is >0, that's how many microseconds it can remain in use before being freed
 			if(e.isUsed()) { //Timing out the used ones
 				if(e.tmout>=0) {
-					if((Util.micros()-e.getLastToggle())>e.tmout) {
+					if((LeptonUtil.micros()-e.getLastToggle())>e.tmout) {
 						old.add(e);
 					}
 				}
 				continue;
 			}
-			if(freeThshld>0 && ((Util.micros()-e.getLastToggle())>freeThshld)) { //Timing out the not used ones
+			if(freeThshld>0 && ((LeptonUtil.micros()-e.getLastToggle())>freeThshld)) { //Timing out the not used ones
 				old.add(e);
 			}
 		}

@@ -5,7 +5,7 @@ package lepton.util.advancedLogger;
  * Using this system, it is relatively easy to create a handler that, for instance, puts the entries in a file instead.
  * You can have multiple handlers.
  */
-public class ConsoleHandler implements LogHandler {
+public class ConsoleHandler extends LogHandler {
 	@Override
 	public void handle(LogEntry entry) {
 		if(entry.level.botherPrinting) {
@@ -16,5 +16,10 @@ public class ConsoleHandler implements LogHandler {
 				System.err.println((isPrefixEmpty?"":"[")+entry.level.prefix+(isPrefixEmpty?"":"]: ")+entry.message);
 			}
 		}
+	}
+
+	@Override
+	public byte getHandlerTypeID() {
+		return 0;
 	}
 }

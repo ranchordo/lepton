@@ -7,7 +7,7 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -81,7 +81,7 @@ public class FrameBuffer {
 			attachList[i]=GL_COLOR_ATTACHMENT0+i;
 		}
 		ib=BufferUtils.createIntBuffer(tbo.length);
-		Util.asIntBuffer(attachList,ib);
+		LeptonUtil.asIntBuffer(attachList,ib);
 		rbo=glGenRenderbuffers();
 		glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
 		if(ms>0) {

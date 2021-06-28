@@ -1,6 +1,6 @@
 package lepton.optim.objpoollib;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 /**
  * PoolInitCreator that works by cloning a prototype object.
@@ -12,7 +12,7 @@ public class PoolInitCreator_clone<T extends Cloneable> implements PoolInitCreat
 	}
 	@Override
 	public T allocateInitValue() {
-		return Util.cloneObject(prototype);
+		return LeptonUtil.cloneObject(prototype);
 	}
 	
 }

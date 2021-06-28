@@ -1,9 +1,12 @@
 package lepton.engine.rendering.lighting;
 
+import java.io.Serializable;
+
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
-public class Light {
+public class Light implements Serializable {
+	private static final long serialVersionUID = 7015232536333246517L;
 	public static final int LIGHT_NULL=0;
 	public static final int LIGHT_AMBIENT=1;
 	public static final int LIGHT_DIRECTION=2;

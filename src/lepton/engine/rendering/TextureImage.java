@@ -57,6 +57,9 @@ public class TextureImage {
 		upload();
 		
 	}
+	public void delete() {
+		glDeleteTextures(id);
+	}
 	private void upload() {
 		glActiveTexture(GL_TEXTURE0+binding);
 		glBindTexture(GL_TEXTURE_2D,id);

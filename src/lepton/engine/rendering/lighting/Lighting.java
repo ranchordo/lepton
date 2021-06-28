@@ -8,10 +8,10 @@ import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL46.GL_WRITE_ONLY;
 
-import lepton.cpshlib.main.SSBO;
-import lepton.cpshlib.main.ShaderDataCompatible;
+import lepton.cpshlib.SSBO;
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.GLContextInitializer;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -54,7 +54,7 @@ public class Lighting {
 			return;
 		}
 		if(fbuffer==null) {
-			Logger.log(4,"Lighting buffer has not yet been populated.");
+			return;
 		}
 		//Initialize the lighting if not initialized:
 		if(!shader.lightingInitialized) {

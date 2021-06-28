@@ -2,7 +2,7 @@ package lepton.engine.rendering.lighting;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import lepton.cpshlib.main.ShaderDataCompatible;
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.FrameBuffer;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;

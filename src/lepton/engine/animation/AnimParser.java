@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -22,7 +22,7 @@ public class AnimParser {
 	 */
 	public static AnimTrack parse(String fname) {
 		try {
-			return parse(new FileInputStream(Util.getExternalPath()+"/"+fname+".ani"));
+			return parse(new FileInputStream(LeptonUtil.getExternalPath()+"/"+fname+".ani"));
 		} catch (IOException e) {
 			Logger.log(4,e.toString(),e);
 			System.exit(1);

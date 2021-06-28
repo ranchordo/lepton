@@ -7,16 +7,17 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import lepton.cpshlib.main.ShaderDataCompatible;
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.Lighting;
 import lepton.util.advancedLogger.Logger;
 
 public class Shader extends ShaderDataCompatible {
+	/**
+	 * A list of uniforms that are default initialized. Mostly for making sure textures bind properly.
+	 */
 	public static HashMap<String, Integer> defaults=new HashMap<String, Integer>();
 	public static void defaultInit() {
-		defaults.put("tex",0);
-		defaults.put("bump",1);
-		defaults.put("norm",2);
+		Texture.addRequiredUniformDefaults(defaults);
 		defaults.put("screen",0);
 		defaults.put("bloom",1);
 		defaults.put("ssao",2);
@@ -44,18 +45,14 @@ public class Shader extends ShaderDataCompatible {
 		glShaderSource(vs, readFile(fname+".vsh"));
 		glCompileShader(vs);
 		if(glGetShaderi(vs, GL_COMPILE_STATUS) != 1) {
-			System.err.println("In "+fname+".vsh: ");
-			System.err.println(glGetShaderInfoLog(vs));
-			System.exit(1);
+			Logger.log(4,"In "+fname+".vsh: "+glGetShaderInfoLog(vs));
 		}
 		
 		fs=glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fs, readFile(fname+".fsh"));
 		glCompileShader(fs);
 		if(glGetShaderi(fs, GL_COMPILE_STATUS) != 1) {
-			System.err.println("In "+fname+".fsh: ");
-			System.err.println(glGetShaderInfoLog(fs));
-			System.exit(2);
+			Logger.log(4,"In "+fname+".fsh: "+glGetShaderInfoLog(vs));
 		}
 		
 		glAttachShader(program,vs);
@@ -68,9 +65,7 @@ public class Shader extends ShaderDataCompatible {
 			glShaderSource(gs,geoShader);
 			glCompileShader(gs);
 			if(glGetShaderi(gs, GL_COMPILE_STATUS) != -1) {
-				System.err.println("In "+fname+".gsh: ");
-				System.err.println(glGetShaderInfoLog(gs));
-				System.exit(3);
+				Logger.log(4,"In "+fname+".gsh: "+glGetShaderInfoLog(vs));
 			}
 			glAttachShader(program,gs);
 		}
@@ -84,14 +79,12 @@ public class Shader extends ShaderDataCompatible {
 		glBindAttribLocation(program,15,"bitangent");
 		
 		glLinkProgram(program);
-		if(glGetProgrami(program,GL_LINK_STATUS)!=1) {
-			System.err.println(glGetProgramInfoLog(program));
-			System.exit(1);
+		if(glGetProgrami(program,GL_LINK_STATUS)!=GL_TRUE) {
+			Logger.log(4,"In shader "+fname+" during program linking routine: "+glGetProgramInfoLog(program));
 		}
 		glValidateProgram(program);
-		if(glGetProgrami(program,GL_VALIDATE_STATUS)!=1) {
-			System.err.println(glGetProgramInfoLog(program));
-			System.exit(1);
+		if(glGetProgrami(program,GL_VALIDATE_STATUS)!=GL_TRUE) {
+			Logger.log(4,"In shader "+fname+" during program validation routine: "+glGetProgramInfoLog(program));
 		}
 		this.setInitialFname(fname);
 		Logger.log(0,"Loaded shader \""+fname+"\" successfully.");
@@ -125,8 +118,7 @@ public class Shader extends ShaderDataCompatible {
 			}
 			b.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+			Logger.log(4,e.toString(),e);
 		} catch (NullPointerException e) {
 			return null;
 		}

@@ -34,7 +34,7 @@ import com.bulletphysics.linearmath.Transform;
 import lepton.engine.physics.PhysicsObject;
 import lepton.optim.objpoollib.DefaultVecmathPools;
 import lepton.optim.objpoollib.PoolElement;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 public class GObject {
@@ -45,39 +45,38 @@ public class GObject {
 	public static final int NORMAL_DATA=3;
 	public static final int TANGENT_DATA=4;
 	public static final int MATERIAL_DATA=5;
-	
+
 	public boolean useTex=false;
-	public boolean useBump=false;
 	private ArrayList<Tri> tris=new ArrayList<Tri>();
 	public VertexMap vmap=new VertexMap();
 	public boolean fromOBJ=false;
-	
+
 	private Shader renderingShader=null;
-	
+
 	public boolean useLighting=true;
 	public boolean wireframe=false;
-	
+
 	private boolean trisLocked=false;
-	
+
 	public boolean useCulling=true;
 	public boolean hasAlpha=false;
-	
+
 	public Vector3f scale=new Vector3f(1.0f,1.0f,1.0f);
-	
+
 	private int v_id;
 	private int t_id;
 	private int c_id;
 	private int n_id;
 	private int m_id;
-	
+
 	private int tan_id;
 	private int bit_id;
-	
+
 	/**
 	 * For instanced rendering. Use on things like particle systems (also use abstractObjectPool for those too, they're awesome).
 	 */
 	public int instances=-1;
-	
+
 	public void addTri(Tri toAdd) {
 		if(!trisLocked) {tris.add(toAdd);}
 		else {
@@ -107,7 +106,7 @@ public class GObject {
 	 */
 	public void lock() {trisLocked=true;}
 	public void unlock() {trisLocked=false;}
-	
+
 	private FloatBuffer vertex_data;
 	private FloatBuffer texture_data;
 	private FloatBuffer color_data;
@@ -119,7 +118,7 @@ public class GObject {
 		if(buffer==null || buffer.capacity()<data.length) {
 			buffer=BufferUtils.createFloatBuffer(data.length+12);
 		}
-		Util.asFloatBuffer(data,buffer);
+		LeptonUtil.asFloatBuffer(data,buffer);
 		return buffer;
 	}
 	private void copyData(int type, int mode) {
@@ -172,7 +171,7 @@ public class GObject {
 		c_id=glGenBuffers();
 		n_id=glGenBuffers();
 		m_id=glGenBuffers();
-		
+
 		tan_id=glGenBuffers();
 		bit_id=glGenBuffers();
 	}
@@ -238,7 +237,7 @@ public class GObject {
 	}
 	private IntBuffer bufferDel=BufferUtils.createIntBuffer(7);
 	public void clearVBOs() {
-		glDeleteBuffers(Util.asIntBuffer(new int[] {v_id, t_id, c_id, n_id, m_id, tan_id, bit_id},bufferDel));
+		glDeleteBuffers(LeptonUtil.asIntBuffer(new int[] {v_id, t_id, c_id, n_id, m_id, tan_id, bit_id},bufferDel));
 	}
 	/**
 	 * Copy all the needed data GPU-side.
@@ -249,7 +248,7 @@ public class GObject {
 		if(texAV()) {this.copyData(TEXTURE_DATA,GL_DYNAMIC_DRAW);}
 		this.copyData(COLOR_DATA,GL_DYNAMIC_DRAW);
 		this.copyData(MATERIAL_DATA,GL_DYNAMIC_DRAW);
-		if(this.useBump && vmap.tex.normLoaded) {
+		if(tbreq()) {
 			this.copyData(TANGENT_DATA,GL_DYNAMIC_DRAW);
 		}
 	}
@@ -264,7 +263,7 @@ public class GObject {
 	private float[] mma=new float[16];
 	private FloatBuffer fm=BufferUtils.createFloatBuffer(16);
 	private FloatBuffer f=BufferUtils.createFloatBuffer(9);
-	
+
 	private Matrix4f m4_=new Matrix4f();
 	private float[] m3_=new float[9];
 	private float sc;
@@ -276,31 +275,30 @@ public class GObject {
 		}
 		if(mm!=null) {
 			mm.getMatrix(m4_).getRotationScale(m);
-			sc=Util.getAvgScale(m);
-			f=Util.asFloatBuffer(toFloatArray(m,m3_),f);
+			sc=LeptonUtil.getAvgScale(m);
+			f=LeptonUtil.asFloatBuffer(toFloatArray(m,m3_),f);
 			//mma=new float[16];
 			mm.getOpenGLMatrix(mma);
-			fm=Util.asFloatBuffer(mma,fm);
+			fm=LeptonUtil.asFloatBuffer(mma,fm);
 			GLContextInitializer.activeShader.setUniformMatrix4fv("master_matrix", fm);
 		}
-		
+
 		mmc.set(GLContextInitializer.cameraTransform);
 		mmc.getOpenGLMatrix(mma);
-		fm=Util.asFloatBuffer(mma,fm);
+		fm=LeptonUtil.asFloatBuffer(mma,fm);
 		GLContextInitializer.activeShader.setUniformMatrix4fv("world2view",fm);
-		
-		Util.openGLMatrix(GLContextInitializer.proj_matrix,mma);
-		fm=Util.asFloatBuffer(mma,fm);
+
+		LeptonUtil.openGLMatrix(GLContextInitializer.proj_matrix,mma);
+		fm=LeptonUtil.asFloatBuffer(mma,fm);
 		GLContextInitializer.activeShader.setUniformMatrix4fv("proj_matrix",fm);
-		
-		GLContextInitializer.activeShader.setUniform1i("millis",(int)(Util.micros()));
-		
-		GLContextInitializer.activeShader.setUniform1f("useTextures", (useTex && this.vmap.tex.colorLoaded && GLContextInitializer.useGraphics) ? 2 : 0);
+
+		GLContextInitializer.activeShader.setUniform1i("millis",(int)(LeptonUtil.micros()));
+
 		GLContextInitializer.activeShader.setUniform1f("useLighting", (this.useLighting && GLContextInitializer.useGraphics) ? 2 : 0);
-		GLContextInitializer.activeShader.setUniform1f("useDetail", (this.vmap.tex.normLoaded && useBump && GLContextInitializer.useGraphics) ? (2) : 0);
-		
+		GLContextInitializer.activeShader.setUniform1i("textureUse", this.vmap.tex.loadedBitflag());
+
 		GLContextInitializer.activeShader.applyAllSSBOs();
-		if(useTex && this.vmap.tex.colorLoaded && GLContextInitializer.useGraphics) {this.vmap.tex.bind();}
+		this.vmap.tex.bind();
 		//glScalef(scale.x,scale.y,scale.z);
 		//glScalef(sc,sc,sc);
 		this.render_raw();
@@ -312,41 +310,36 @@ public class GObject {
 	public int getNumTris() {
 		return tris.size();
 	}
-	public static final int RTXVertexSize=16;
-	public FloatBuffer RTXAddVertexData(FloatBuffer in, int modelMatrixID) {
-		for(int i=0;i<tris.size();i++) {
-			Tri t=tris.get(i);
-			Vector3f v0=vmap.vertices.get(t.vertices[0]);
-			Vector3f v1=vmap.vertices.get(t.vertices[1]);
-			Vector3f v2=vmap.vertices.get(t.vertices[2]);
-			in.put(v0.x); in.put(v0.y); in.put(v0.z); in.put(2);
-			in.put(v1.x); in.put(v1.y); in.put(v1.z); in.put(2);
-			in.put(v2.x); in.put(v2.y); in.put(v2.z); in.put(modelMatrixID);
-			in.put(modelMatrixID);
-			in.put(1);
-			in.put(1);
-			in.put(1);
-		}
-		return in;
-	}
+	//	public static final int RTXVertexSize=16;
+	//	public FloatBuffer RTXAddVertexData(FloatBuffer in, int modelMatrixID) {
+	//		for(int i=0;i<tris.size();i++) {
+	//			Tri t=tris.get(i);
+	//			Vector3f v0=vmap.vertices.get(t.vertices[0]);
+	//			Vector3f v1=vmap.vertices.get(t.vertices[1]);
+	//			Vector3f v2=vmap.vertices.get(t.vertices[2]);
+	//			in.put(v0.x); in.put(v0.y); in.put(v0.z); in.put(2);
+	//			in.put(v1.x); in.put(v1.y); in.put(v1.z); in.put(2);
+	//			in.put(v2.x); in.put(v2.y); in.put(v2.z); in.put(modelMatrixID);
+	//			in.put(modelMatrixID);
+	//			in.put(1);
+	//			in.put(1);
+	//			in.put(1);
+	//		}
+	//		return in;
+	//	}
 	/**
 	 * tex Used and Loaded
 	 */
-	public boolean texUAL() {return useTex && vmap.tex.colorLoaded;}
+	//public boolean texUAL() {return useTex && vmap.tex.anyLoaded();}
+	public boolean tbreq() {return vmap.tex.TBReq();}
 	/**
 	 * texCoords AVailable.
 	 */
 	public boolean texAV() {return vmap.texcoords.size()>0;}
 	/**
-	 * bump Used and Loaded
-	 */
-	public boolean bumpUAL() {
-		return useBump && vmap.tex.normLoaded;
-	}
-	/**
 	 * Draw the main triangles (do not use; use highRender instead).
 	 */
-	private void drawArrays() {
+	private void optionallyInstancedDrawArrays() {
 		if(instances<1) {
 			glDrawArrays(GL_TRIANGLES,0,tris.size()*3);
 		} else {
@@ -363,46 +356,46 @@ public class GObject {
 		if(texAV()) {glEnableVertexAttribArray(8);}
 		glEnableVertexAttribArray(2);
 		glEnableVertexAttribArray(3);
-		if(bumpUAL()) {glEnableVertexAttribArray(14);}
-		if(bumpUAL()) {glEnableVertexAttribArray(15);}
+		if(tbreq()) {glEnableVertexAttribArray(14);}
+		if(tbreq()) {glEnableVertexAttribArray(15);}
 		glEnableVertexAttribArray(13);
-		
-		
+
+
 		glBindBuffer(GL_ARRAY_BUFFER,v_id);
 		glVertexAttribPointer(0,3,GL_FLOAT,false,0,0);
-		
+
 		if(texAV()) {
 			glBindBuffer(GL_ARRAY_BUFFER,t_id);
 			glVertexAttribPointer(8,2,GL_FLOAT,false,0,0);
 		}
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER,n_id);
 		glVertexAttribPointer(2,3,GL_FLOAT,false,0,0);
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER,c_id);
 		glVertexAttribPointer(3,4,GL_FLOAT,false,0,0);
-		
-		if(bumpUAL()) {
+
+		if(tbreq()) {
 			glBindBuffer(GL_ARRAY_BUFFER,tan_id);
 			glVertexAttribPointer(14,3,GL_FLOAT,false,0,0);
-			
+
 			glBindBuffer(GL_ARRAY_BUFFER,bit_id);
 			glVertexAttribPointer(15,3,GL_FLOAT,false,0,0);
 		}
 		glBindBuffer(GL_ARRAY_BUFFER,m_id);
 		glVertexAttribPointer(13,4,GL_FLOAT,false,0,0);
-		
-		
-		drawArrays();
+
+
+		optionallyInstancedDrawArrays();
 		glBindBuffer(GL_ARRAY_BUFFER,0);
-		
+
 		glDisableVertexAttribArray(0);
 		if(texAV()) {glDisableVertexAttribArray(8);}
 		glDisableVertexAttribArray(2);
 		glDisableVertexAttribArray(3);
 		if(wireframe) {glPolygonMode(GL_FRONT,GL_FILL);}
-		if(bumpUAL()) {glDisableVertexAttribArray(14);}
-		if(bumpUAL()) {glDisableVertexAttribArray(15);}
+		if(tbreq()) {glDisableVertexAttribArray(14);}
+		if(tbreq()) {glDisableVertexAttribArray(15);}
 		glDisableVertexAttribArray(13);
 		if(!useCulling) {glEnable(GL_CULL_FACE);}
 	}
@@ -436,16 +429,16 @@ public class GObject {
 	public void scale(float x, float y, float z) {
 		this.vmap.scale(x,y,z);
 	}
-//	public GObject scale(float s) {
-//		for(Tri t : tris) {
-//			for(float[] vert : t.vertices) {
-//				for(int i=0;i<vert.length;i++) {
-//					vert[i]*=s;
-//				}
-//			}
-//		}
-//		return this;
-//	}
+	//	public GObject scale(float s) {
+	//		for(Tri t : tris) {
+	//			for(float[] vert : t.vertices) {
+	//				for(int i=0;i<vert.length;i++) {
+	//					vert[i]*=s;
+	//				}
+	//			}
+	//		}
+	//		return this;
+	//	}
 	private float[] glvertices_last;
 	private float[] glvertices() {
 		if(glvertices_last!=null && trisLocked) {
@@ -459,11 +452,11 @@ public class GObject {
 			glvertices_last[i*3*3+0]=vertex1.x;
 			glvertices_last[i*3*3+1]=vertex1.y;
 			glvertices_last[i*3*3+2]=vertex1.z;
-			
+
 			glvertices_last[i*3*3+3]=vertex2.x;
 			glvertices_last[i*3*3+4]=vertex2.y;
 			glvertices_last[i*3*3+5]=vertex2.z;
-			
+
 			glvertices_last[i*3*3+6]=vertex3.x;
 			glvertices_last[i*3*3+7]=vertex3.y;
 			glvertices_last[i*3*3+8]=vertex3.z;
@@ -483,11 +476,11 @@ public class GObject {
 			glnormals_last[i*3*3+0]=vertex1.x;
 			glnormals_last[i*3*3+1]=vertex1.y;
 			glnormals_last[i*3*3+2]=vertex1.z;
-			
+
 			glnormals_last[i*3*3+3]=vertex2.x;
 			glnormals_last[i*3*3+4]=vertex2.y;
 			glnormals_last[i*3*3+5]=vertex2.z;
-			
+
 			glnormals_last[i*3*3+6]=vertex3.x;
 			glnormals_last[i*3*3+7]=vertex3.y;
 			glnormals_last[i*3*3+8]=vertex3.z;
@@ -507,12 +500,12 @@ public class GObject {
 			glcolors_last[i*3*4+1]=vertex1.y;
 			glcolors_last[i*3*4+2]=vertex1.z;
 			glcolors_last[i*3*4+3]=vertex1.w;
-			
+
 			glcolors_last[i*3*4+4]=vertex1.x;
 			glcolors_last[i*3*4+5]=vertex1.y;
 			glcolors_last[i*3*4+6]=vertex1.z;
 			glcolors_last[i*3*4+7]=vertex1.w;
-			
+
 			glcolors_last[i*3*4+8]=vertex1.x;
 			glcolors_last[i*3*4+9]=vertex1.y;
 			glcolors_last[i*3*4+10]=vertex1.z;
@@ -534,12 +527,12 @@ public class GObject {
 			glmatdata_last[i*3*4+1]=vertex1.y;
 			glmatdata_last[i*3*4+2]=vertex1.z;
 			glmatdata_last[i*3*4+3]=vertex1.w;
-			
+
 			glmatdata_last[i*3*4+4]=vertex1.x;
 			glmatdata_last[i*3*4+5]=vertex1.y;
 			glmatdata_last[i*3*4+6]=vertex1.z;
 			glmatdata_last[i*3*4+7]=vertex1.w;
-			
+
 			glmatdata_last[i*3*4+8]=vertex1.x;
 			glmatdata_last[i*3*4+9]=vertex1.y;
 			glmatdata_last[i*3*4+10]=vertex1.z;
@@ -560,10 +553,10 @@ public class GObject {
 			Vector2f vertex3=vmap.texcoords.get(tris.get(i).texcoords[2]);
 			gltexcoords_last[i*3*2+0]=vertex1.x;
 			gltexcoords_last[i*3*2+1]=1-vertex1.y;
-			
+
 			gltexcoords_last[i*3*2+2]=vertex2.x;
 			gltexcoords_last[i*3*2+3]=1-vertex2.y;
-			
+
 			gltexcoords_last[i*3*2+4]=vertex3.x;
 			gltexcoords_last[i*3*2+5]=1-vertex3.y;
 		}
@@ -589,21 +582,21 @@ public class GObject {
 			Vector3f v0=vmap.vertices.get(tris.get(i).vertices[0]);
 			Vector3f v1=vmap.vertices.get(tris.get(i).vertices[1]);
 			Vector3f v2=vmap.vertices.get(tris.get(i).vertices[2]);
-			
+
 			Vector2f uv0=vmap.texcoords.get(tris.get(i).texcoords[0]);
 			Vector2f uv1=vmap.texcoords.get(tris.get(i).texcoords[1]);
 			Vector2f uv2=vmap.texcoords.get(tris.get(i).texcoords[2]);
-			
+
 			Vector3f dp1=new Vector3f(); dp1.sub(v1,v0);
 			Vector3f dp2=new Vector3f(); dp2.sub(v2,v0);
-			
+
 			Vector2f duv1=new Vector2f(); duv1.sub(uv1,uv0);
 			Vector2f duv2=new Vector2f(); duv2.sub(uv2,uv0);
-			
+
 			/**
 			 *  float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-        	 *  glm::vec3 tangent = (deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r;
-        	 *  glm::vec3 bitangent = (deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r;
+			 *  glm::vec3 tangent = (deltaPos1 * deltaUV2.y   - deltaPos2 * deltaUV1.y)*r;
+			 *  glm::vec3 bitangent = (deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r;
 			 */
 			float r=1.0f / (duv1.x*duv2.y - duv1.y*duv2.x);
 			Vector3f tangent=new Vector3f();//(Vector3f) Util.mul(Util.sub(Util.mul(dp1,duv2.y),Util.mul(dp2,duv1.y)),r);
@@ -627,18 +620,17 @@ public class GObject {
 		return ret;
 	}
 	/**
-	 * Load an obj file. It'll look for a texture with the same name (file extension is added automatically: do not put ".obj" at the end.)
+	 * Load an obj file. It'll look for a texture with the same name and try to load that. (file extension is added automatically: do not put ".obj" at the end.)
 	 */
-	public GObject loadOBJ(String filename) { //Wavefront file parser "frontend"
+	public GObject loadOBJ(String filename) {
 		if(trisLocked) {
 			throw new SecurityException("LoadOBJ(FN) -> Tris are locked. What the heck were you thinking?");
 		}
 		try {
-			tris=loadOBJ_raw(new FileInputStream(Util.getExternalPath()+"/"+filename+".obj"));
-			if(vmap.tex.colorLoaded) {
+			tris=loadOBJ_raw(new FileInputStream(LeptonUtil.getExternalPath()+"/"+filename+".obj"));
+			if(texAV()) {
 				this.vmap.tex=new Texture();
 				boolean texError=true;
-				this.vmap.tex.colorLoaded=false;
 				for(String ext : new String[] {".png",".jpg"}) {
 					String search="3d/"+filename+ext;
 					boolean found=false;
@@ -647,42 +639,31 @@ public class GObject {
 							this.vmap.tex=p;
 							texError=false;
 							found=true;
-							this.vmap.tex.colorLoaded=true;
 							break;
 						}
 					}
 					if(found) {break;}
 					try {
-						Logger.log(0,"Loading new texture "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
-						this.vmap.tex.create_color(filename,ext);
-						try {
-							this.vmap.tex.create_bump(filename,"_bump"+ext);
-						} catch (FileNotFoundException e) {
-							Logger.log(0,"GObject "+filename+": No bump map.");
-							this.vmap.tex.bumpLoaded=false;
+						Logger.log(0,"loadOBJ(f) multi-ext texture search: Loading new texture stem "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
+						for(int i=0;i<Texture.NUM_TEXTURES;i++) {
+							try {
+								this.vmap.tex.create(1,filename,"_"+(i==0?"":Texture.tex_names[i])+"."+ext);
+							} catch (FileNotFoundException e) {
+								Logger.log(0,"GObject "+filename+": No "+Texture.tex_names[i]+" texture.");
+							}
 						}
-						try {
-							this.vmap.tex.create_norm(filename,"_bump"+ext);
-						} catch (FileNotFoundException e) {
-							Logger.log(0,"GObject "+filename+": No normal map.");
-							this.vmap.tex.normLoaded=false;
-						}
-						this.vmap.tex.colorLoaded=true;
 						this.vmap.tex.name=search;
 						texError=false;
 						GLContextInitializer.activeTextureCache.cache.add(this.vmap.tex);
 						break;
-					} catch (FileNotFoundException e) {
-					} catch (NullPointerException e) {
-					} catch (IllegalArgumentException e) {}
+					} catch (NullPointerException | IllegalArgumentException e) {
+						Logger.log(2,e.toString());
+					}
 				}
 				if(texError) {
-					Logger.log(1,"Texture mappings included, but no file found for model "+filename);
+					Logger.log(1,"Texture mappings included, but no textures found for model "+filename);
 				}
 			}
-		} catch(FileNotFoundException e) {
-			e.printStackTrace();
-			Logger.log(4,filename+" does not appear to exist.",e);
 		} catch(IOException e) {
 			e.printStackTrace();
 			Logger.log(4,"IOException GObject.loadObj",e);
@@ -690,61 +671,47 @@ public class GObject {
 		return this;
 	}
 	/**
-	 * Load texture manually. Must have file extension. Will only succeed if vmap.tex.colorLoaded is true.
+	 * Load texture manually. Must have file extension as "ext" and not in "filename".
 	 */
-	public void loadTexture(String texname) throws IOException {
-		if(vmap.tex.colorLoaded) {
-			this.vmap.tex=new Texture();
-			this.vmap.tex.colorLoaded=false;
+	public void loadTexture(String filename, String ext) throws IOException {
+		if(texAV()) {
+			String search="3d/"+filename+ext;
+			boolean found=false;
 			for(Texture p : GLContextInitializer.activeTextureCache.cache) {
-				if(p.name.equals(texname)) {
+				if(p.name.equals(search)) {
 					this.vmap.tex=p;
-					this.vmap.tex.colorLoaded=true;
-					return;
+					found=true;
+					break;
 				}
 			}
+			if(found) {return;}
 			try {
-				Logger.log(0,"Loading new texture "+texname+". If you see this often, there's a problem.");
-				this.vmap.tex.create_color(texname,"");
-				String[] dot=texname.split("\\.");
-				dot[dot.length-2]=dot[dot.length-2]+"_bump";
-				String bumpname=String.join(".",dot);
-				
-				dot=texname.split("\\.");
-				dot[dot.length-2]=dot[dot.length-2]+"_normal";
-				String normname=String.join(".",dot);
-				try {
-					this.vmap.tex.create_bump(bumpname,"");
-				} catch (FileNotFoundException e) {
-					Logger.log(0,"GObject texture "+bumpname+": No bump map.");
-					this.vmap.tex.bumpLoaded=false;
+				Logger.log(0,"loadTexture(f,e) file search: Loading new texture stem "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
+				for(int i=0;i<Texture.NUM_TEXTURES;i++) {
+					String flagged_ext=(i==0?"":("_"+Texture.tex_names[i]))+"."+ext;
+					try {
+						this.vmap.tex.create(i,filename,flagged_ext);
+					} catch (FileNotFoundException e) {
+						Logger.log(0,"Texture "+filename+": No "+Texture.tex_names[i]+" texture at expected location "+filename+flagged_ext+".");
+					}
 				}
-				try {
-					this.vmap.tex.create_norm(normname,"");
-				} catch (FileNotFoundException e) {
-					Logger.log(0,"GObject texture "+normname+": No normal map.");
-					this.vmap.tex.normLoaded=false;
-				}
-				this.vmap.tex.colorLoaded=true;
-				this.vmap.tex.name=texname;
+				this.vmap.tex.name=search;
 				GLContextInitializer.activeTextureCache.cache.add(this.vmap.tex);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				System.exit(1);
-			} catch (NullPointerException e) {
-			} catch (IllegalArgumentException e) {}
+			} catch (NullPointerException | IllegalArgumentException e) {
+				Logger.log(2,e.toString());
+			}
 		}
 	}
 	/**
-	 * Load an obj file with a custom texture. Filename must not have a file extension, texname must have one.
+	 * Load an obj file with a custom texture. Filename must not have a file extension, texname must not have one either, but the file extension for texname must be put in tex_ext.
 	 */
-	public GObject loadOBJ(String filename, String texname) { //Wavefront file parser "frontend"
+	public GObject loadOBJ(String filename, String texname, String tex_ext) { //Wavefront file parser "frontend"
 		if(trisLocked) {
-			throw new SecurityException("LoadOBJ(FN,TN) -> Tris are locked. What were you thinking?");
+			throw new SecurityException("LoadOBJ(FN,TN) -> Tris are locked.");
 		}
 		try {
-			tris=loadOBJ_raw(Util.getOptionallyIntegratedStream(filename,".obj"));
-			loadTexture(texname);
+			tris=loadOBJ_raw(LeptonUtil.getOptionallyIntegratedStream(filename,".obj"));
+			loadTexture(texname,tex_ext);
 		} catch(FileNotFoundException e) {
 			e.printStackTrace();
 			Logger.log(4,filename+" does not appear to exist.",e);
@@ -790,19 +757,16 @@ public class GObject {
 					float yn=Float.valueOf(line.split(" ")[2].split("/")[2]);
 					float zn=Float.valueOf(line.split(" ")[3].split("/")[2]);
 					normIndices.add(new Vector3f(xn,yn,zn));
-					if(this.vmap.tex.colorLoaded) {
+					if(texAV()) {
 						float xt=Float.valueOf(line.split(" ")[1].split("/")[1]);
 						float yt=Float.valueOf(line.split(" ")[2].split("/")[1]);
 						float zt=Float.valueOf(line.split(" ")[3].split("/")[1]);
 						texIndices.add(new Vector3f(xt,yt,zt));
 					}
 				} catch (NumberFormatException e) {
-					e.printStackTrace();
-					System.err.println(line);
-					System.exit(1);
+					Logger.log(4,e.toString()+"\nOccurred on file line "+line,e);
 				}
 			} else if(line.startsWith("vt ")) {
-				this.vmap.tex.colorLoaded=true;
 				String[] split=line.split(" ");
 				Vector2f n=new Vector2f(Float.valueOf(split[1]),Float.valueOf(split[2]));
 				this.vmap.texcoords.add(n);
@@ -814,11 +778,11 @@ public class GObject {
 					-1+(int)vertIndices.get(i).x,
 					-1+(int)vertIndices.get(i).y,
 					-1+(int)vertIndices.get(i).z,
-					
+
 					-1+(int)normIndices.get(i).x,
 					-1+(int)normIndices.get(i).y,
 					-1+(int)normIndices.get(i).z);
-			if(this.vmap.tex.colorLoaded) { 
+			if(texAV()) { 
 				t.texcoords[0]=-1+(int)texIndices.get(i).x;
 				t.texcoords[1]=-1+(int)texIndices.get(i).y;
 				t.texcoords[2]=-1+(int)texIndices.get(i).z;

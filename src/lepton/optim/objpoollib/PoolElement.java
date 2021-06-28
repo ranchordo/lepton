@@ -1,6 +1,6 @@
 package lepton.optim.objpoollib;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 public class PoolElement<T> {
 	public long tmout=-1;
@@ -14,7 +14,7 @@ public class PoolElement<T> {
 	public void free() {setUsed(false);}
 	public PoolElement(T newobject) {
 		o=newobject;
-		lastToggle=Util.micros();
+		lastToggle=LeptonUtil.micros();
 	}
 	public PoolElement<T> setInternalObject(T newobject) {
 		o=newobject;
@@ -22,7 +22,7 @@ public class PoolElement<T> {
 	}
 	protected PoolElement<T> setUsed(boolean nused) {
 		used=nused;
-		lastToggle=Util.micros();
+		lastToggle=LeptonUtil.micros();
 		return this;
 	}
 	public boolean isUsed() {return used;}

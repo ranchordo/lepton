@@ -6,7 +6,7 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 /**
  * Giant blindfold that covers your camera.
@@ -41,16 +41,16 @@ public class Screen {
 			0,1
 		};
 		glBindBuffer(GL_ARRAY_BUFFER,vbo);
-		glBufferData(GL_ARRAY_BUFFER,Util.asFloatBuffer(v_data, BufferUtils.createFloatBuffer(v_data.length)),GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER,LeptonUtil.asFloatBuffer(v_data, BufferUtils.createFloatBuffer(v_data.length)),GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER,tbo);
-		glBufferData(GL_ARRAY_BUFFER,Util.asFloatBuffer(t_data, BufferUtils.createFloatBuffer(t_data.length)),GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER,LeptonUtil.asFloatBuffer(t_data, BufferUtils.createFloatBuffer(t_data.length)),GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 	}
 	float[] mma=new float[16];
 	FloatBuffer fm=BufferUtils.createFloatBuffer(16);
 	public void render() {
-		Util.openGLMatrix(GLContextInitializer.proj_matrix,mma);
-		fm=Util.asFloatBuffer(mma,fm);
+		LeptonUtil.openGLMatrix(GLContextInitializer.proj_matrix,mma);
+		fm=LeptonUtil.asFloatBuffer(mma,fm);
 		GLContextInitializer.activeShader.setUniformMatrix4fv("proj_matrix",fm);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(8);

@@ -3,9 +3,9 @@ package lepton.tests;
 import static org.lwjgl.opengl.GL46.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-import lepton.cpshlib.main.ComputeShader;
-import lepton.cpshlib.main.SSBO;
-import lepton.cpshlib.main.ShaderDataCompatible;
+import lepton.cpshlib.ComputeShader;
+import lepton.cpshlib.SSBO;
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.FrameBuffer;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;

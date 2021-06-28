@@ -212,11 +212,11 @@ public class ImageUtil {
 		}
 	}
 	/**
-	 * Like {@link org.hpjmci.util.ImageUtil.getImage}, but with functionality to obtain the inputstream itself. Fname would be something like "image" or "image integrated", and ext would be ".jpg". " integrated" will be used to determine whether or not the file is packaged within the extra source folder within the jarfile.
-	 * Uses {@link org.hpjmci.util.Util.getOptionallyIntegratedStream} internally.
+	 * Like getImage(InputStream), but with functionality to obtain the inputstream itself. Fname would be something like "image" or "image integrated", and ext would be ".jpg". " integrated" will be used to determine whether or not the file is packaged within the extra source folder within the jarfile.
+	 * Uses lepton.util.Util.getOptionallyIntegratedStream internally.
 	 */
 	public static BufferedImage getImage_fname(String fname, String ext) throws FileNotFoundException {
-		return getImage(Util.getOptionallyIntegratedStream(fname,ext));
+		return getImage(LeptonUtil.getOptionallyIntegratedStream(fname,ext));
 	}
 	public static BufferedImage getImage_handleNotFound(InputStream stream) { //Just get a bufferedimage.
 		try {

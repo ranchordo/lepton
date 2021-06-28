@@ -21,7 +21,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 import org.lwjgl.stb.STBVorbisInfo;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 import org.lwjgl.stb.STBVorbis;
@@ -89,8 +89,7 @@ public class Audio {
 	
 	//Mostly from the LWJGL 3.2.3 OPENAL demo:
 	/**
-	 * Gets an audio file with a specific filename. Automatically adds the extension. Uses {@link org.hpjmci.util.Util.getOptionallyIntegratedStream} internally.
-	 * @param filename
+	 * Gets an audio file with a specific filename. Automatically adds the extension. Uses lepton.util.Util.getOptionallyIntegratedStream internally.
 	 * @return OpenGL style int pointer representing the audio buffer
 	 */
 	public static int getOGG(String file) {
@@ -130,7 +129,7 @@ public class Audio {
     }
 	private static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
         ByteBuffer buffer;
-		InputStream source=Util.getOptionallyIntegratedStream(resource,".ogg");
+		InputStream source=LeptonUtil.getOptionallyIntegratedStream(resource,".ogg");
 		ReadableByteChannel rbc = Channels.newChannel(source);
 		buffer = BufferUtils.createByteBuffer(bufferSize);
 

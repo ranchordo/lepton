@@ -19,7 +19,7 @@ import lepton.engine.physics.WorldObject;
 import lepton.engine.rendering.GObject;
 import lepton.engine.rendering.Texture;
 import lepton.engine.rendering.Tri;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 public class EngineTestFloor {
@@ -53,7 +53,6 @@ public class EngineTestFloor {
 		this.geo.g=new GObject();
 		this.geo.p=new PhysicsObject();
 		this.geo.g.useTex=true; //If useTex=false but you're loading a texture, you'll get a memory access exception. This is characterized by the JVM suddenly exiting with code -1073741819. Check your texture usage if this happens.
-		this.geo.g.useBump=false;
 		this.geo.g.useLighting=true;
 		
 		this.geo.g.vmap.vertices=new ArrayList<Vector3f>();
@@ -103,18 +102,11 @@ public class EngineTestFloor {
 
 		this.geo.g.lock();
 		
-		this.geo.g.vmap.tex.colorLoaded=true; //Before loading a texture manually, make sure to enable this to tell GObject that texCoords are specified. Otherwise loading will fail.
 		try {
-			this.geo.g.loadTexture("cropped_border.jpg integrated");
-			this.geo.g.vmap.tex=new Texture(this.geo.g.vmap.tex); //Separate from the texture cache in order to modify
-			this.geo.g.vmap.tex.reset(Texture.BUMP);
-			this.geo.g.vmap.tex.reset(Texture.NORMAL);
-			this.geo.g.vmap.tex.create_norm("cropped_border_normal_detail.jpg integrated","");
+			this.geo.g.loadTexture("engineTest-cropped_border integrated","jpg");
+			this.geo.g.vmap.tex.create(Texture.NORMAL,"engineTest-cropped_border_normal_detail integrated",".jpg");
 		} catch (IOException e) {
 			Logger.log(4,e.toString(),e);
-		}
-		if(this.geo.g.vmap.tex.normLoaded) {
-			this.geo.g.useBump=true;
 		}
 		
 		//Make sure you do this last (even after loading textures) to fix what buffers need to be initialized:

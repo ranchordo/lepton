@@ -4,7 +4,7 @@ import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 import static org.lwjgl.openal.AL10.*;
 
@@ -26,7 +26,7 @@ public class Sound {
 	}
 	public void free() {
 		delbuf_arr[0]=bufferId;
-		Util.asIntBuffer(delbuf_arr,delbuf);
+		LeptonUtil.asIntBuffer(delbuf_arr,delbuf);
 		alDeleteBuffers(delbuf);
 	}
 }

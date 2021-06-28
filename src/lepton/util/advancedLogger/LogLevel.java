@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class LogLevel {
+	private static boolean isFatal_internal=false;
+	public static boolean isFatal() {
+		return isFatal_internal;
+	}
 	String prefix;
 	boolean botherPrinting=true;
 	boolean inErrStream=false;
@@ -21,6 +25,7 @@ public class LogLevel {
 	}
 	public void tryExit() {
 		if(exitOnRecv) {
+			isFatal_internal=true;
 			StackTraceElement[] trace=Thread.currentThread().getStackTrace();
 			String stackTrace=Arrays.stream(trace).map(o->o.toString()).collect(Collectors.joining("\n"));
 			Logger.log(Logger.logger_internal,"FATAL ERROR STACK TRACE:\n"+stackTrace);

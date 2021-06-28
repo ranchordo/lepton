@@ -76,14 +76,13 @@ public class EngineTestCube {
 		}
 	}
 	public void initSoundtrack() {
-		soundtrack.put("Clank","clank integrated");
+		soundtrack.put("Clank","engineTest-clank integrated");
 	}
 	public void initGeo() {
 		this.geo=new WorldObject();
 		this.geo.g=new GObject();
 		this.geo.p=new PhysicsObject();
 		this.geo.g.useTex=false;
-		this.geo.g.useBump=false;
 		this.geo.g.useLighting=true;
 		
 		this.geo.g.vmap.vertices=new ArrayList<Vector3f>();

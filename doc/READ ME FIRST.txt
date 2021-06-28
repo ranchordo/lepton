@@ -1,2 +1,0 @@
-Javadoc:
-Used to document libraries. I'm too lazy to host this on a webserver, so just download this zip, extract it, and double-click on "index.html" to see the library documentation.

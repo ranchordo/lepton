@@ -2,7 +2,7 @@ package lepton.optim.objpoollib;
 
 import java.util.HashSet;
 
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -26,10 +26,10 @@ public class PoolStrainer {
 		if(CLEAN_PERIOD<=0) {
 			return;
 		}
-		if((Util.micros()-lastClean)>CLEAN_PERIOD) {
+		if((LeptonUtil.micros()-lastClean)>CLEAN_PERIOD) {
 			int r=cleanAll_noCheck();
 			if(r!=0) {Logger.log(0,"Pool cleaning: Cleaned "+r+" old elements.");}
-			lastClean=Util.micros();
+			lastClean=LeptonUtil.micros();
 		}
 	}
 }

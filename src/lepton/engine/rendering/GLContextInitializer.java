@@ -11,9 +11,9 @@ import org.lwjgl.opengl.GL;
 
 import com.bulletphysics.linearmath.Transform;
 
-import lepton.cpshlib.main.ShaderDataCompatible;
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.BloomHandler;
-import lepton.util.Util;
+import lepton.util.LeptonUtil;
 
 /**
  * Serves as a rendering and OpenGL general utility.
@@ -54,7 +54,7 @@ public class GLContextInitializer {
 		if(calculatingTiming) {
 			throw new IllegalStateException("TimeCalcStart: Use timeCalcStart and timeCalcEnd correctly or you will be eaten by dinosaurs. (redundant chronological call)");
 		}
-		starttm=Util.micros();
+		starttm=LeptonUtil.micros();
 		calculatingTiming=true;
 	}
 	/**
@@ -64,7 +64,7 @@ public class GLContextInitializer {
 		if(!calculatingTiming) {
 			throw new IllegalStateException("TimeCalcEnd: Use timeCalcStart and timeCalcEnd correctly or you will suffer from a gruesome fate. (redundant chronological call)");
 		}
-		fp=(float)((double)(Util.micros()-starttm)/1000.0f);
+		fp=(float)((double)(LeptonUtil.micros()-starttm)/1000.0f);
 		fr=1.0f/fp;
 		calculatingTiming=false;
 	}
