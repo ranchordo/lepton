@@ -11,4 +11,5 @@ The LWJGL components required for Lepton are:
 3. LWJGL-GLFW  
 4. LWJGL-OpenAL  
 5. LWJGL-STB  
+  
 These LWJGL components are packaged along with the jarfile found in releases and in /dist.
