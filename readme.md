@@ -3,7 +3,7 @@ Lepton is an LWJGL-based java library for optimization, GPU parallel computing, 
   
 A javadoc for Lepton has been provided in /doc/index.html.  
   
-The license for LWJGL has been included as /LWJGL-LICENSE.txt. No source code from LWJGL has been included. LWJGL-LICENSE is not the license for this project in its entirety. For that, please see /LICENSE.md  
+The license for LWJGL has been included as /LWJGL-LICENSE.txt. No source code from LWJGL has been included. LWJGL-LICENSE is not the license for this project in its entirety. For that, please see /LICENSE  
   
 The LWJGL bindings required for Lepton are:  
 1. LWJGL core  
