@@ -11,7 +11,7 @@ import lepton.util.advancedLogger.Logger;
 import lepton.util.console.ConsoleWindow;
 
 /**
- * Generic run configuration for packaging as runnable jar: Includes main method that does nothing.
+ * Generic run configuration for packaging as runnable jar: Includes the self-testing utility.
  */
 public class GenericRunConfiguration {
 	private static Class<?>[] configs=new Class[] {CPSHLibSSBOTest.class, ObjPoolLibTest.class, TensorLibTest.class, EngineTest.class};
