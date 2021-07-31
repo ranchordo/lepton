@@ -3,14 +3,9 @@ package lepton.engine.physics;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
-import com.bulletphysics.collision.broadphase.CollisionAlgorithm;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
@@ -29,9 +24,11 @@ import lepton.engine.rendering.GLContextInitializer;
 import lepton.util.advancedLogger.Logger;
 
 /**
- * Oh gosh. This is a complicated class.
+ * Physics worlds!
  */
-public class Physics {
+public class PhysicsWorld {
+	public static int maxPhysicsSubsteps=60;
+	public static float fixedPhysicsSubstep=1.0f/120.0f;
 	/**
 	 * Collision filter mask/group for NOTHING. 0. Lookup "JBullet collision filtering" to figure out how to use these.
 	 */
@@ -40,39 +37,16 @@ public class Physics {
 	 * Collision filter mask/group for EVERYTHING. ~0 (~ is bitwise not, so 0b11111...). Lookup "JBullet collision filtering" to figure out how to use these.
 	 */
 	public static final short EVERYTHING=0b111111111111111;
-	/**
-	 * JBullet thing.
-	 */
-	public static DiscreteDynamicsWorld dynamicsWorld;
+	
+	public DiscreteDynamicsWorld dynamicsWorld;
 	/**
 	 * Whether or not to keep track of collision data accessibly thru the collisions and collisionVels lists in RigidBodyEntry's.
 	 */
-	public static boolean EXPOSE_COLLISION_DATA=false;
-	private static HashSet<RigidBodyEntry> bodies=new HashSet<RigidBodyEntry>();
-	private static ArrayList<LocalRayResult> rayTest=new ArrayList<LocalRayResult>();
-	private static Vector3f gravity=new Vector3f(0,-10,0);
-	//public static final float gravity_magnitude=10;
-	/**
-	 * For raycasting with JBullet. results are stored in an internal arraylist that can be fetched with getRayTestResults. Remember to use clearRayTestResults first.
-	 */
-	public static final RayResultCallback rayResultCallback=new RayResultCallback() {
-		@Override
-		public float addSingleResult(LocalRayResult arg0, boolean arg1) {
-			Physics.rayTest.add(arg0);
-			return 0;
-		}
-		
-	};
-	public ArrayList<LocalRayResult> getRayTestResults() {
-		return rayTest;
-	}
-	public void clearRayTestResults() {
-		rayTest.clear();
-	}
-	public static HashSet<RigidBodyEntry> getBodies() {
-		return bodies;
-	}
-	public static void initPhysics() {
+	public boolean EXPOSE_COLLISION_DATA=false;
+	private HashSet<RigidBodyEntry> bodies=new HashSet<RigidBodyEntry>();
+	private ArrayList<LocalRayResult> rayTestResults=new ArrayList<LocalRayResult>();
+	private Vector3f gravity=new Vector3f(0,-10,0);
+	public PhysicsWorld() {
 		BroadphaseInterface broadphase=new DbvtBroadphase();
 		CollisionConfiguration collisionConfiguration=new DefaultCollisionConfiguration();
 		CollisionDispatcher dispatcher=new CollisionDispatcher(collisionConfiguration);
@@ -80,13 +54,33 @@ public class Physics {
 		dynamicsWorld=new DiscreteDynamicsWorld(dispatcher,broadphase,solver,collisionConfiguration);
 		dynamicsWorld.setGravity(gravity);
 	}
-	private static Vector3f linforce=new Vector3f();
-	public static PhysicsStepModifier activePhysicsStepModifier=null;
-	private static Vector3f linvel1=new Vector3f();
-	private static Vector3f linvel2=new Vector3f();
-	private static Vector3f posDifference=new Vector3f();
-	private static Transform temp=new Transform();
-	public static void step() {
+	/**
+	 * For raycasting with JBullet. results are stored in an internal arraylist that can be fetched with getRayTestResults. Remember to use clearRayTestResults first.
+	 */
+	public final RayResultCallback rayResultCallback=new RayResultCallback() {
+		@Override
+		public float addSingleResult(LocalRayResult arg0, boolean arg1) {
+			PhysicsWorld.this.rayTestResults.add(arg0);
+			return 0;
+		}
+		
+	};
+	public ArrayList<LocalRayResult> getRayTestResults() {
+		return rayTestResults;
+	}
+	public void clearRayTestResults() {
+		rayTestResults.clear();
+	}
+	public HashSet<RigidBodyEntry> getBodies() {
+		return bodies;
+	}
+	private Vector3f linforce=new Vector3f();
+	public PhysicsStepModifier activePhysicsStepModifier=null;
+	private Vector3f linvel1=new Vector3f();
+	private Vector3f linvel2=new Vector3f();
+	private Vector3f posDifference=new Vector3f();
+	private Transform temp=new Transform();
+	public void step() {
 		if(EXPOSE_COLLISION_DATA) {
 			for(RigidBodyEntry be : bodies) {be.initializeCollisionListsPerFrame();}
 		}
@@ -99,7 +93,7 @@ public class Physics {
 			linforce.scale(be.b.getInvMass());
 			be.b.applyCentralForce(linforce);
 		}
-		dynamicsWorld.stepSimulation(1.0f/GLContextInitializer.fr);
+		dynamicsWorld.stepSimulation(GLContextInitializer.fp,PhysicsWorld.maxPhysicsSubsteps,PhysicsWorld.fixedPhysicsSubstep);
 		if(EXPOSE_COLLISION_DATA) {
 			int manifolds=dynamicsWorld.getDispatcher().getNumManifolds();
 			for(int i=0;i<manifolds;i++) {
@@ -136,34 +130,33 @@ public class Physics {
 			activePhysicsStepModifier.postStepProcess(bodies);
 		}
 	}
-	public static void add(RigidBody b, short group) {
-		dynamicsWorld.addRigidBody(b,EVERYTHING,EVERYTHING);
-		bodies.add(new RigidBodyEntry(b,EVERYTHING,EVERYTHING));
+	public void add(RigidBody b, short group) {
+		dynamicsWorld.addRigidBody(b,PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING);
+		bodies.add(new RigidBodyEntry(b,PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING));
 	}
-	public static void add(RigidBody b, short group, short mask) {
+	public void add(RigidBody b, short group, short mask) {
 		dynamicsWorld.addRigidBody(b,group,mask);
 		bodies.add(new RigidBodyEntry(b,group,mask));
 	}
-	public static void remove(RigidBody b) {
+	public void add(RigidBodyEntry b) {
+		dynamicsWorld.addRigidBody(b.b,b.group,b.mask);
+		bodies.add(b);
+	}
+	public void remove(RigidBody b) {
 		if(b==null) {
 			Logger.log(2,"Removing null body.");
 		}
 		try {
 			dynamicsWorld.removeRigidBody(b);
 		} catch (NullPointerException e) {
-			Logger.log(4, "Concave-static to concave-static collision, NullPointerException on internal call freeCollisionAlgorithm.", e);
+			Logger.log(4, "Concave-static to concave-static collision, NullPointerException for GImpact freeCollisionAlgorithm.", e);
 		}
-		for(RigidBodyEntry be : bodies) {
-			if(be.b==b) {
-				bodies.remove(be);
-				break;
-			}
-		}
+		bodies.remove(getEntryFromRigidBody(b));
 	}
 	public static RigidBodyEntry getEntryFromRigidBody(RigidBody b) {
 		return ((UserPointerStructure)b.getUserPointer()).ParentRBEntryPointer;
 	}
-	public static void reAdd(RigidBody b, short group, short mask) {
+	public void reAdd(RigidBody b, short group, short mask) {
 		dynamicsWorld.removeRigidBody(b);
 		dynamicsWorld.addRigidBody(b,group,mask);
 		RigidBodyEntry entry=getEntryFromRigidBody(b);
@@ -172,7 +165,7 @@ public class Physics {
 			entry.mask=mask;
 		}
 	}
-	public static void reAdd(RigidBodyEntry b, short group, short mask) {
+	public void reAdd(RigidBodyEntry b, short group, short mask) {
 		dynamicsWorld.removeRigidBody(b.b);
 		dynamicsWorld.addRigidBody(b.b,group,mask);
 		b.group=group;
@@ -181,21 +174,21 @@ public class Physics {
 	/**
 	 * Disable rigidbody deactivation. Useful to jumpstart a "stuck" simulation.
 	 */
-	public static void wake() {
+	public void wake() {
 		for(RigidBodyEntry be : bodies) {
 			be.b.setActivationState(CollisionObject.ACTIVE_TAG);
 		}
 	}
-	private static Vector3f gravityClone=new Vector3f();
-	public static Vector3f getGravity() {
+	private Vector3f gravityClone=new Vector3f();
+	public Vector3f getGravity() {
 		gravityClone.set(gravity);
 		return gravityClone;
 	}
-	public static void setGravity(Vector3f gravity) {
-		Physics.gravity=gravity;
+	public void setGravity(Vector3f gravity) {
+		this.gravity=gravity;
 		dynamicsWorld.setGravity(gravity);
 		for(RigidBodyEntry be : bodies) {
-			be.refreshGravity();
+			be.refreshGravity(this);
 		}
 	}
 }

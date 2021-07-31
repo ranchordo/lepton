@@ -68,6 +68,7 @@ public class ConsoleWindow {
 			return;
 		}
 		String s=textArea.getText();
+		println("");
 		int idx=s.lastIndexOf("\n");
 		if(s.length()>0 && idx>=0) {
 			onCommand.run(s.substring(idx+1));

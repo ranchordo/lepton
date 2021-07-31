@@ -15,8 +15,8 @@ import org.lwjgl.BufferUtils;
 import com.bulletphysics.linearmath.Transform;
 
 import lepton.engine.audio.Audio;
-import lepton.engine.physics.Physics;
 import lepton.engine.physics.PhysicsObject;
+import lepton.engine.physics.PhysicsWorld;
 import lepton.engine.rendering.FrameBuffer;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;
@@ -58,8 +58,10 @@ public class EngineTest {
 	 * Method given to ConsoleWindow's onCommand for execution on command receipt.
 	 */
 	public void recieveCommand(String command) {
-		//System.out.println("Got console command: "+command);
+		Logger.log(0,"Recieved console command: "+command);
 	}
+	public static EngineTest m;
+	public PhysicsWorld physics=new PhysicsWorld();
 	/**
 	 * Execute the main engine test.
 	 */
@@ -91,8 +93,7 @@ public class EngineTest {
 		
 		InputHandler h=new InputHandler(GLContextInitializer.win);
 		
-		Physics.initPhysics();
-		Physics.EXPOSE_COLLISION_DATA=true;
+		physics.EXPOSE_COLLISION_DATA=true;
 		
 		Audio.init();
 		
@@ -115,14 +116,14 @@ public class EngineTest {
 		GLContextInitializer.cameraTransform.set(t);
 		Lighting.addLight(new Light(Light.LIGHT_POSITION, 0,-15,-7, inte*r, inte*g, inte*b, 1));
 		Lighting.addLight(new Light(Light.LIGHT_AMBIENT,0,0,0, amb,amb,amb,1));
-		cube.geo.p.addToSimulation(Physics.EVERYTHING,Physics.EVERYTHING);
-		floor.geo.p.addToSimulation(Physics.EVERYTHING,Physics.EVERYTHING);
+		cube.geo.p.addToSimulation(PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING,physics);
+		floor.geo.p.addToSimulation(PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING,physics);
 		
 		GLContextInitializer.defaultMainShader=new Shader("main_engineTest");
 		
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			GLContextInitializer.timeCalcStart();
-			Physics.step();
+			physics.step();
 			PoolStrainer.clean();
 			glfwPollEvents();
 			if(glfwGetKey(GLContextInitializer.win,GLFW_KEY_ESCAPE)==1) {
@@ -171,7 +172,7 @@ public class EngineTest {
 		CleanupTasks.cleanUp();
 	}
 	public static void main(String[] args) {
-		EngineTest m=new EngineTest();
+		m=new EngineTest();
 		try {
 			m.Main();
 		} catch (Exception e) {

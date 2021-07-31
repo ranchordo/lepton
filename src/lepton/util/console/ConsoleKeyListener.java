@@ -24,6 +24,9 @@ public class ConsoleKeyListener implements KeyListener {
 		if(c=='`') {
 			arg0.consume();
 		}
+		if(c=='\n') {
+			arg0.consume();
+		}
 	}
 	@Override
 	public void keyReleased(KeyEvent arg0) {

@@ -20,8 +20,8 @@ public class RigidBodyEntry {
 		this.mask=mask;
 		this.group=group;
 	}
-	public void refreshGravity() {
-		Vector3f g=Physics.getGravity();
+	public void refreshGravity(PhysicsWorld pw) {
+		Vector3f g=pw.getGravity();
 		if(!useGravity) {
 			constAcceleration.set(-g.x,-g.y,-g.z);
 		} else {

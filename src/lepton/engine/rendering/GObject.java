@@ -76,6 +76,7 @@ public class GObject {
 	 * For instanced rendering. Use on things like particle systems (also use abstractObjectPool for those too, they're awesome).
 	 */
 	public int instances=-1;
+	
 
 	public void addTri(Tri toAdd) {
 		if(!trisLocked) {tris.add(toAdd);}
@@ -266,7 +267,8 @@ public class GObject {
 
 	private Matrix4f m4_=new Matrix4f();
 	private float[] m3_=new float[9];
-	private float sc;
+	public ViewMatrixModifier viewMatrixModifier=null;
+//	private float sc;
 	public void highRender_customTransform(Transform mm) {
 		if(renderingShader==null) {
 			GLContextInitializer.defaultMainShader.bind();
@@ -275,7 +277,7 @@ public class GObject {
 		}
 		if(mm!=null) {
 			mm.getMatrix(m4_).getRotationScale(m);
-			sc=LeptonUtil.getAvgScale(m);
+//			sc=LeptonUtil.getAvgScale(m);
 			f=LeptonUtil.asFloatBuffer(toFloatArray(m,m3_),f);
 			//mma=new float[16];
 			mm.getOpenGLMatrix(mma);
@@ -284,6 +286,9 @@ public class GObject {
 		}
 
 		mmc.set(GLContextInitializer.cameraTransform);
+		if(viewMatrixModifier!=null) {
+			mmc=viewMatrixModifier.modifyViewMatrix(mmc);
+		}
 		mmc.getOpenGLMatrix(mma);
 		fm=LeptonUtil.asFloatBuffer(mma,fm);
 		GLContextInitializer.activeShader.setUniformMatrix4fv("world2view",fm);

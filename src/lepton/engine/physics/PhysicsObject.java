@@ -81,14 +81,14 @@ public class PhysicsObject {
 	public void doBody(RigidBodyConstructionInfo bodyConstructionInfo) {
 		this.body=new RigidBody(bodyConstructionInfo);
 	}
-	public void addToSimulation(short group) {
-		Physics.add(body,group);
+	public void addToSimulation(short group, PhysicsWorld pw) {
+		pw.add(body,group);
 	}
-	public void addToSimulation(short group, short mask) {
-		Physics.add(body,group,mask);
+	public void addToSimulation(short group, short mask, PhysicsWorld pw) {
+		pw.add(body,group,mask);
 	}
-	public void removePhysics() {
-		Physics.remove(body);
+	public void removePhysics(PhysicsWorld pw) {
+		pw.remove(body);
 	}
 	
 	/**

@@ -1,7 +1,5 @@
 package lepton.util;
 
-import static org.lwjgl.opengl.GL46.*;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,12 +19,12 @@ import org.lwjgl.BufferUtils;
 
 import com.bulletphysics.linearmath.Transform;
 
-import lepton.cpshlib.ComputeShader;
 import lepton.optim.objpoollib.DefaultVecmathPools;
 import lepton.optim.objpoollib.PoolElement;
 import lepton.util.advancedLogger.Logger;
 
 public class LeptonUtil {
+	public static Class<?> locationReference=LeptonUtil.class;
 	/**
 	 * Shove a float[] into a floatBuffer of the same size.
 	 */
@@ -199,9 +197,15 @@ public class LeptonUtil {
 	 * Get external path where the project is located.
 	 */
 	public static String getExternalPath() {
-		File jarpath=new File(ComputeShader.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+		File jarpath=new File(locationReference.getProtectionDomain().getCodeSource().getLocation().getPath());
 		String externalPath=jarpath.getParentFile().getAbsolutePath().replace("\\", "/").replace("%20", " ");
 		return externalPath;
+	}
+	/**
+	 * Get path if this is a jarfile
+	 */
+	public static String getJarPath() {
+		return locationReference.getProtectionDomain().getCodeSource().getLocation().getPath().replace("\\", "/").replace("%20", " ");
 	}
 	/**
 	 * Milliseconds since... well... something.

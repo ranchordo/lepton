@@ -64,7 +64,7 @@ public class GLContextInitializer {
 		if(!calculatingTiming) {
 			throw new IllegalStateException("TimeCalcEnd: Use timeCalcStart and timeCalcEnd correctly or you will suffer from a gruesome fate. (redundant chronological call)");
 		}
-		fp=(float)((double)(LeptonUtil.micros()-starttm)/1000.0f);
+		fp=(float)((double)(LeptonUtil.micros()-starttm)/1000000.0);
 		fr=1.0f/fp;
 		calculatingTiming=false;
 	}

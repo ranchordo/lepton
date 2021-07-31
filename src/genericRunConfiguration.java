@@ -28,7 +28,6 @@ public class GenericRunConfiguration {
 	}
 	public static void recvCommand(String cmd) {
 		if(ignoreCommands) {return;}
-		cw.println("\n");
 		if(cmd.startsWith(base_command)) {
 			String rc=cmd.substring(cmd.indexOf(" ")+1);
 			boolean command=false;
@@ -57,7 +56,7 @@ public class GenericRunConfiguration {
 			cw.println("run-config [configuration] - Run a test configuration");
 			cw.println("exit - Exit this utility");
 			cw.println("list-configs - List possible run configurations");
-			cw.println("help - Display this message\n");
+			cw.println("help - Display this message");
 		} else {
 			int f=cmd.indexOf(" ");
 			Logger.log(3,"Unrecognized command "+(f<0?cmd:cmd.substring(0,f)));
@@ -76,7 +75,7 @@ public class GenericRunConfiguration {
 		cw.println("run-config [configuration] - Run a test configuration");
 		cw.println("exit - Exit this utility");
 		cw.println("list-configs - List possible run configurations");
-		cw.println("help - Display this message\n");
+		cw.println("help - Display this message");
 		cw.setOnCloseBehavior(GenericRunConfiguration::onCWClose);
 		cw.setVisible(true);
 		cw.println("Listing possible run configurations:");
