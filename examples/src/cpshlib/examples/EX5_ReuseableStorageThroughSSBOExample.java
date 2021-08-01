@@ -57,8 +57,7 @@ public class EX5_ReuseableStorageThroughSSBOExample {
 		//Position: (A,B,C), Rotation (quat): (D,E,F,G), Scale: (H).
 		//Position: (A,B,D), Rotation (quat): (E,F,G,H), Scale: ([last frame's H]).
 		//The byte represented by "C" did not get written, causing components of various things to spill other places.
-		//Bytes do not end up in the required place anymore and are instead shifted. This can be persistent if you are using SSBOs persistently (which is how you *should* be using them):
-		//For example of how weird this can be visually, take a look at this: https://youtu.be/63gigCNJdZs?t=116
+		//Bytes do not end up in the required place anymore and are instead shifted. This can be persistent if you are using SSBOs persistently (which is how you *should* be using them).
 		//Make sure that your sizing lines up so that frameshifts don't happen, barring complete memory or paging corruption.
 		
 		SSBO balls=ballInitializer.generateNewSSBO("balls_buffer",numBalls*sizeOfBall);
