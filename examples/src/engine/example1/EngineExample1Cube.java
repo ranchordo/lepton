@@ -13,8 +13,8 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 
 import lepton.engine.audio.Soundtrack;
 import lepton.engine.audio.SourcePool;
-import lepton.engine.physics.Physics;
 import lepton.engine.physics.PhysicsObject;
+import lepton.engine.physics.PhysicsWorld;
 import lepton.engine.physics.RigidBodyEntry;
 import lepton.engine.physics.WorldObject;
 import lepton.engine.rendering.GLContextInitializer;
@@ -58,8 +58,8 @@ public class EngineExample1Cube {
 		tempPoint.set(this.geo.p.getTransform().origin);
 		GLContextInitializer.cameraTransform.getMatrix(tempMat4).transform(tempPoint);
 		sourcePool.logic(tempPoint);
-		ArrayList<RigidBodyEntry> collisions=Physics.getEntryFromRigidBody(this.geo.p.body).getCollisions();
-		ArrayList<Float> collisionVels=Physics.getEntryFromRigidBody(this.geo.p.body).getCollisionVels();
+		ArrayList<RigidBodyEntry> collisions=PhysicsWorld.getEntryFromRigidBody(this.geo.p.body).getCollisions();
+		ArrayList<Float> collisionVels=PhysicsWorld.getEntryFromRigidBody(this.geo.p.body).getCollisionVels();
 		for(int i=0;i<collisions.size();i++) {
 			RigidBodyEntry thing=collisions.get(i);
 			if(!pcollisions.contains(thing)) {
