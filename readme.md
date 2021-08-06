@@ -14,4 +14,6 @@ The LWJGL components required for Lepton are:
 4. LWJGL-OpenAL  
 5. LWJGL-STB  
   
-These LWJGL components are packaged along with the jarfile found in releases and in /dist.
+These LWJGL components are packaged along with the jarfile found in releases and in /dist.  
+  
+Lepton will most likely leave beta when [Space - A Portal Story](https://ranchordo.github.io/space-a-portal-story), a project based upon Lepton, releases.
