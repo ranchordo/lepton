@@ -14,9 +14,11 @@ public class RigidBodyEntry {
 	public boolean useGravity=true;
 	public RigidBodyEntry(RigidBody b, short group, short mask) {
 		this.b=b;
-		UserPointerStructure ups=new UserPointerStructure();
-		ups.ParentRBEntryPointer=this;
-		this.b.setUserPointer(ups);
+		if(b.getUserPointer()==null) {
+			UserPointerStructure ups=new UserPointerStructure();
+			ups.ParentRBEntryPointer=this;
+			this.b.setUserPointer(ups);
+		}
 		this.mask=mask;
 		this.group=group;
 	}
