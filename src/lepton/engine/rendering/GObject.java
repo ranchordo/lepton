@@ -122,7 +122,7 @@ public class GObject {
 		LeptonUtil.asFloatBuffer(data,buffer);
 		return buffer;
 	}
-	private void copyData(int type, int mode) {
+	public void copyData(int type, int mode) {
 		switch(type) {
 		case VERTEX_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,v_id);
