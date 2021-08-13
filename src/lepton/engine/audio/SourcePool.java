@@ -43,8 +43,8 @@ public class SourcePool extends AbstractObjectPool<Source> {
 		}
 	}
 	private void freeDone() {
-		for(int i=0;i<pool.size();i++) {
-			PoolElement<Source> a=pool.get(i);
+		for(int i=0;i<inUse.size();i++) {
+			PoolElement<Source> a=inUse.get(i);
 			if(!a.o().isPlaying()) {
 				playing.remove((String)a.mdo);
 				a.free();

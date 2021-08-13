@@ -24,6 +24,8 @@ import lepton.engine.rendering.Shader;
 import lepton.engine.rendering.lighting.BloomHandler;
 import lepton.engine.rendering.lighting.Light;
 import lepton.engine.rendering.lighting.Lighting;
+import lepton.optim.objpoollib.DefaultVecmathPools;
+import lepton.optim.objpoollib.PoolElement;
 import lepton.optim.objpoollib.PoolStrainer;
 import lepton.util.CleanupTasks;
 import lepton.util.InputHandler;
@@ -122,6 +124,8 @@ public class EngineTest {
 		GLContextInitializer.defaultMainShader=new Shader("main_engineTest");
 		
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
+			PoolElement<Vector3f> testpe=DefaultVecmathPools.vector3f.alloc();
+			testpe.free();
 			GLContextInitializer.timeCalcStart();
 			physics.step();
 			PoolStrainer.clean();
@@ -176,6 +180,7 @@ public class EngineTest {
 		try {
 			m.Main();
 		} catch (Exception e) {
+			e.printStackTrace();
 			Logger.log(4,e.toString()+", Logger-based stack trace is incorrect.",e);
 		}
 	}
