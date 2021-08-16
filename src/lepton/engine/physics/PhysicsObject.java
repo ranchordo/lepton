@@ -92,7 +92,7 @@ public class PhysicsObject {
 	}
 	
 	/**
-	 * Calculate a RigidBodyConstructionInfo from a GObject's vertexData.
+	 * Construct a RigidBodyConstructionInfo from a GObject's vertexData.
 	 */
 	public RigidBodyConstructionInfo initPhysics_mesh(GObject vertdata, Vector3f pos, Quat4f rot) {
 		CollisionShape shape=null;
@@ -113,12 +113,43 @@ public class PhysicsObject {
 		return null;
 	}
 	/**
+	 * Construct a RigidBodyConstructionInfo from a GObject's vertexData.
+	 */
+	public RigidBodyConstructionInfo initPhysics_mesh(GObject vertdata, Transform initialTransform) {
+		CollisionShape shape=null;
+		if(vertdata.fromOBJ) {
+			OBJReturnObject o=new OBJReturnObject();
+			o.fromVMap(vertdata.vmap, vertdata.getTris());
+			TriangleIndexVertexArray mesh=new TriangleIndexVertexArray(o.numTriangles,o.indices,3*4,vertdata.vmap.vertices.size(),o.vertices,3*4);
+			shape=new BvhTriangleMeshShape(mesh,true);
+			MotionState motionState=new DefaultMotionState(initialTransform);
+			if(mass!=0) {
+				shape.calculateLocalInertia(mass,inertia);
+			}
+			RigidBodyConstructionInfo bodyConstructionInfo=new RigidBodyConstructionInfo(mass,motionState,shape,inertia);
+			return bodyConstructionInfo;
+		}
+		return null;
+	}
+	/**
 	 * Get a RigidBodyConstructionInfo from a JBullet CollisionShape.
 	 */
 	public RigidBodyConstructionInfo initPhysics_shape(CollisionShape shape, Vector3f pos, Quat4f rot) {
 		MotionState motionState=new DefaultMotionState(new Transform(new Matrix4f(
 				rot,
 				pos,1.0f)));
+		if(mass!=0) {
+			shape.calculateLocalInertia(mass,inertia);
+		}
+		RigidBodyConstructionInfo bodyConstructionInfo=new RigidBodyConstructionInfo(mass,motionState,shape,inertia);
+		bodyConstructionInfo.restitution=0.25f;
+		return bodyConstructionInfo;
+	}
+	/**
+	 * Get a RigidBodyConstructionInfo from a JBullet CollisionShape.
+	 */
+	public RigidBodyConstructionInfo initPhysics_shape(CollisionShape shape, Transform initialTransform) {
+		MotionState motionState=new DefaultMotionState(initialTransform);
 		if(mass!=0) {
 			shape.calculateLocalInertia(mass,inertia);
 		}
