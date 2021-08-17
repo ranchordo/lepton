@@ -52,7 +52,7 @@ public class Shader extends ShaderDataCompatible {
 		glShaderSource(fs, readFile(fname+".fsh"));
 		glCompileShader(fs);
 		if(glGetShaderi(fs, GL_COMPILE_STATUS) != 1) {
-			Logger.log(4,"In "+fname+".fsh: "+glGetShaderInfoLog(vs));
+			Logger.log(4,"In "+fname+".fsh: "+glGetShaderInfoLog(fs));
 		}
 		
 		glAttachShader(program,vs);
