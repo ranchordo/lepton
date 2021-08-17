@@ -10,7 +10,7 @@ uniform float bloom_thshld=1.0;
 void main() {
 	vec3 hdr=texture2D(screen,texcoords).xyz;
 	FragColor=vec4(hdr,1);
-	float brightness = dot(hdr, normalize(vec3(1,1,1)));//vec3(0.2126, 0.7152, 0.0722));
+	float brightness = dot(hdr, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > bloom_thshld) {
         BrightColor = vec4(FragColor.rgb, 1.0);
     } else {
