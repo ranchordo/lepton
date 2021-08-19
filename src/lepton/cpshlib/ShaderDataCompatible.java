@@ -12,6 +12,7 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.system.MemoryStack;
 
+import lepton.engine.rendering.InstanceAccumulator;
 import lepton.util.advancedLogger.Logger;
 
 public abstract class ShaderDataCompatible {
@@ -29,6 +30,8 @@ public abstract class ShaderDataCompatible {
 	private int program_internal;
 	
 	private String initialFname="ERROR IN NAME";
+	
+	public InstanceAccumulator instanceAccumulator;
 	
 	/**
 	 * No usey.
