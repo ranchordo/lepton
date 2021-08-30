@@ -2,8 +2,6 @@ package lepton.util.advancedLogger;
 
 import java.util.ArrayList;
 
-import lepton.util.ArrayListDefaults;
-
 /***
  * Contains an array of LogLevels that are used to give different integer levels their meaning.
  */
@@ -41,7 +39,11 @@ public class Logger {
 	/**
 	 * List of console handlers. public: feel free to modify.
 	 */
-	public static ArrayListDefaults<LogHandler> handlers=new ArrayListDefaults<LogHandler>(new ConsoleHandler());
+	public static ArrayList<LogHandler> handlers;
+	static {
+		handlers=new ArrayList<LogHandler>();
+		handlers.add(new ConsoleHandler());
+	}
 	/**
 	 * Whether to log locally or not.
 	 */

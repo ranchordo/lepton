@@ -31,8 +31,6 @@ public abstract class ShaderDataCompatible {
 	
 	private String initialFname="ERROR IN NAME";
 	
-	public InstanceAccumulator instanceAccumulator;
-	
 	/**
 	 * No usey.
 	 */
