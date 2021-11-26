@@ -87,6 +87,9 @@ public class GObject {
 	public ArrayList<Tri> getTris() {
 		return tris;
 	}
+	@Override public int hashCode() {
+		return vmap.hashCode();
+	}
 	/**
 	 * Clean up the data to avoid resource leaks.
 	 */

@@ -28,4 +28,31 @@ public class VertexMap {
 			t.transform(e);
 		}
 	}
+	@Override public int hashCode() {
+		int ret=0;
+		int multiplier=1;
+		for(Vector2f v : texcoords) {
+			ret+=((Float)v.x).hashCode()*multiplier;
+			multiplier*=0x38927483;
+			ret+=((Float)v.y).hashCode()*multiplier;
+			multiplier*=0x38927483;
+		}
+		for(Vector3f v : vertices) {
+			ret+=((Float)v.x).hashCode()*multiplier;
+			multiplier*=0x38927483;
+			ret+=((Float)v.y).hashCode()*multiplier;
+			multiplier*=0x38927483;
+			ret+=((Float)v.z).hashCode()*multiplier;
+			multiplier*=0x38927483;
+		}
+		for(Vector3f v : normals) {
+			ret+=((Float)v.x).hashCode()*multiplier;
+			multiplier*=0x38927483;
+			ret+=((Float)v.y).hashCode()*multiplier;
+			multiplier*=0x38927483;
+			ret+=((Float)v.z).hashCode()*multiplier;
+			multiplier*=0x38927483;
+		}
+		return ret;
+	}
 }

@@ -65,7 +65,7 @@ public class Shader extends ShaderDataCompatible {
 			glShaderSource(gs,geoShader);
 			glCompileShader(gs);
 			if(glGetShaderi(gs, GL_COMPILE_STATUS) != -1) {
-				Logger.log(4,"In "+fname+".gsh: "+glGetShaderInfoLog(vs));
+				Logger.log(4,"In "+fname+".gsh: "+glGetShaderInfoLog(gs));
 			}
 			glAttachShader(program,gs);
 		}
@@ -90,6 +90,9 @@ public class Shader extends ShaderDataCompatible {
 		Logger.log(0,"Loaded shader \""+fname+"\" successfully.");
 	}
 	public void bind() {
+		if(GLContextInitializer.activeShader==this) {
+			return;
+		}
 		if(!defaultsInited) {defaultInit();}
 		glUseProgram(program);
 		GLContextInitializer.activeShader=this;

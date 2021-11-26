@@ -68,6 +68,9 @@ public class ComputeShader extends ShaderDataCompatible {
 //		return !tfname.equals(Renderer.activeComputeShader.getFname());
 //	}
 	public void bind() {
+		if(GLContextInitializer.activeShader==this) {
+			return;
+		}
 		glUseProgram(program);
 		GLContextInitializer.activeShader=this;
 		Lighting.apply();
@@ -84,8 +87,7 @@ public class ComputeShader extends ShaderDataCompatible {
 			}
 			b.close();
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+			Logger.log(4,e.toString(),e);
 		} catch (NullPointerException e) {
 			Logger.log(4,"/compute_shaders/"+fname+" does not exist.");
 		}
