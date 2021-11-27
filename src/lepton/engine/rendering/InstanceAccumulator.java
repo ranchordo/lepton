@@ -13,11 +13,23 @@ public class InstanceAccumulator {
 	private FloatBuffer buffer;
 	private SSBO ssbo;
 	private ShaderDataCompatible shader;
+	private boolean dataChanged=false;
+	public static boolean runAggressiveChangeCheckDefault=false;
+	public boolean runAggressiveChangeCheck=false;
+	public boolean hasDataChanged() {
+		return dataChanged;
+	}
 	public InstanceAccumulator(ShaderDataCompatible shader, int objectSize, String name) {
 		this.shader=shader;
 		this.objectSize=objectSize;
 		this.buffer=BufferUtils.createFloatBuffer(0);
-		ssbo=shader.generateNewSSBO(name,0);
+		SSBO s=shader.getSSBOMappings().get(name);
+		if(s==null) {
+			ssbo=shader.generateNewSSBO(name,0);
+		} else {
+			ssbo=s;
+		}
+		runAggressiveChangeCheck=runAggressiveChangeCheckDefault;
 	}
 	public FloatBuffer getBuffer() {
 		return buffer;
@@ -30,6 +42,7 @@ public class InstanceAccumulator {
 	}
 	public void reset() {
 		buffer.position(0);
+		dataChanged=false;
 	}
 	public void add(float[] data) {
 		if(data.length!=objectSize) {
@@ -37,6 +50,9 @@ public class InstanceAccumulator {
 		}
 		if((buffer.position()+data.length>buffer.capacity()) || buffer==null) {
 			//We need to reallocate
+			if(buffer.capacity()>1048576) {
+				Logger.log(0,"We may have an oversized buffer. Reallocating with new size "+(buffer.position()+data.length));
+			}
 			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(buffer.position()+data.length);
 			shader.initSSBOData(newbuffer.capacity()*4,ssbo);
 			newbuffer.position(0);
@@ -46,10 +62,31 @@ public class InstanceAccumulator {
 			buffer=newbuffer;
 		}
 		for(int i=0;i<data.length;i++) {
+			if(runAggressiveChangeCheck) { dataChanged=dataChanged || (buffer.get(buffer.position())!=data[i]); }
 			buffer.put(data[i]);
 		}
+		dataChanged=dataChanged || !runAggressiveChangeCheck;
+	}
+	public void reserveObject() {
+		if((buffer.position()+objectSize>buffer.capacity()) || buffer==null) {
+			//We need to reallocate
+			if(buffer.capacity()>1048576) {
+				Logger.log(0,"We may have an oversized buffer. Reallocating with new size "+(buffer.position()+objectSize));
+			}
+			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(buffer.position()+objectSize);
+			shader.initSSBOData(newbuffer.capacity()*4,ssbo);
+			newbuffer.position(0);
+			for(int i=0;i<buffer.position();i++) {
+				newbuffer.put(buffer.get(i));
+			}
+			buffer=newbuffer;
+			dataChanged=true;
+		}
+		buffer.position(buffer.position()+objectSize);
 	}
 	public void submit() {
-		ShaderDataCompatible.updateSSBOData(buffer,ssbo);
+		if(hasDataChanged()) {
+			ShaderDataCompatible.updateSSBOData(buffer,ssbo);
+		}
 	}
 }
