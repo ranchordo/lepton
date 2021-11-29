@@ -14,7 +14,14 @@ public class InstanceAccumulator {
 	private SSBO ssbo;
 	private ShaderDataCompatible shader;
 	private boolean dataChanged=false;
+	public static final byte NO_MERGE=0;
+	public static final byte ID_MERGE=1;
+	public static final byte FULL_MERGE=2;
 	public static boolean runAggressiveChangeCheckDefault=false;
+	/**
+	 * 0: no merge. 1: id merge. 2: full object+buffer merge.
+	 */
+	public static byte mergeSSBOsOnDuplicate=FULL_MERGE;
 	public boolean runAggressiveChangeCheck=false;
 	public boolean hasDataChanged() {
 		return dataChanged;
@@ -24,8 +31,12 @@ public class InstanceAccumulator {
 		this.objectSize=objectSize;
 		this.buffer=BufferUtils.createFloatBuffer(0);
 		SSBO s=shader.getSSBOMappings().get(name);
-		if(s==null) {
+		if(s==null || mergeSSBOsOnDuplicate!=FULL_MERGE) {
 			ssbo=shader.generateNewSSBO(name,0);
+			if(mergeSSBOsOnDuplicate==ID_MERGE && s!=null) {
+				shader.decrementSSBOId();
+				ssbo.id=s.id;
+			}
 		} else {
 			ssbo=s;
 		}

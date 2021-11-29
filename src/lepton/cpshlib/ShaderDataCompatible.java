@@ -52,6 +52,12 @@ public abstract class ShaderDataCompatible {
 	 */
 	public boolean lightingInitialized=false;
 	private SSBO lightingSSBO=null;
+	/**
+	 * DO NOT USE unless you're doing some weird stuff with SSBO merging. This method could completely mess up your ssbo setup. **Be careful.**
+	 */
+	public void decrementSSBOId() {
+		SSBOId--;
+	}
 	public abstract void bind();
 	/**
 	 * For use on shader initialization. Don't use unless you're creating your own shader management classes (like ComputeShader, Shader, etc).
@@ -170,6 +176,9 @@ public abstract class ShaderDataCompatible {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
+	public void refreshBlockBinding(SSBO ssbo) {
+		glShaderStorageBlockBinding(program(), ssbo.location, ssbo.id);
+	}
 	private static boolean bufferMapped=false;
 	/**
 	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
@@ -225,6 +234,12 @@ public abstract class ShaderDataCompatible {
 	
 	public void applyAllSSBOs() {
 		for(Entry<String, SSBO> e : ssbo.entrySet()) {
+			applySSBO(e.getValue());
+		}
+	}
+	public void applyAllSSBOsExcept(SSBO s) {
+		for(Entry<String, SSBO> e : ssbo.entrySet()) {
+			if(e.getValue()==s) {return;}
 			applySSBO(e.getValue());
 		}
 	}

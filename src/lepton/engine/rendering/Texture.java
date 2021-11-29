@@ -71,6 +71,7 @@ public class Texture {
 	 * Reset a buffer. Options are COLOR, BUMP, NORMAL. Useful for separating a texture from a cache.
 	 */
 	public void reset(int id) {
+		texImages[id].delete();
 		texImages[id]=new TextureImage(id);
 	}
 	/**

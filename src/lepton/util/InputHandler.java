@@ -1,10 +1,13 @@
 package lepton.util;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
-import static org.lwjgl.glfw.GLFW.glfwGetMouseButton;
+import static org.lwjgl.glfw.GLFW.*;
 
+import java.nio.DoubleBuffer;
 import java.util.HashMap;
+
+import javax.vecmath.Vector2d;
+
+import org.lwjgl.BufferUtils;
 
 /**
  * Quick way to handle keyboard inputs thru GLFW.
@@ -46,5 +49,17 @@ public class InputHandler {
 		}
 		rise.put(key,ret);
 		return sret;
+	}
+	private DoubleBuffer mx=BufferUtils.createDoubleBuffer(1);
+	private DoubleBuffer my=BufferUtils.createDoubleBuffer(1);
+	private Vector2d mret=new Vector2d();
+	/**
+	 * Get mouse position
+	 */
+	public Vector2d mp() {
+		mx.clear(); my.clear();
+		glfwGetCursorPos(win,mx,my);
+		mret.set(mx.get(0),my.get(0));
+		return mret;
 	}
 }
