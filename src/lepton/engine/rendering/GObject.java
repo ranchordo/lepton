@@ -637,7 +637,6 @@ public class GObject {
 		try {
 			tris=loadOBJ_raw(new FileInputStream(LeptonUtil.getExternalPath()+"/"+filename+".obj"));
 			if(texAV()) {
-				this.vmap.tex=new Texture();
 				boolean texError=true;
 				for(String ext : new String[] {".png",".jpg"}) {
 					String search="3d/"+filename+ext;

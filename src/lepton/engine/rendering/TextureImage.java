@@ -28,7 +28,7 @@ public class TextureImage {
 		return g;
 	}
 	@Override public int hashCode() {
-		return (hashCode!=-1)?hashCode:bi.hashCode();
+		return (hashCode!=-1)?hashCode:0;
 	}
 	public void create(BufferedImage in) {
 		this.initBI(in);
@@ -46,7 +46,7 @@ public class TextureImage {
 		int[] pixels_raw=new int[width*height*4];
 		pixels_raw=bi.getRGB(0, 0, width, height, null, 0, width);
 		pixels=BufferUtils.createByteBuffer(width*height*4);
-		
+		hashCode=-1;
 		for(int i=0;i<width;i++) {
 			for(int j=0;j<height;j++) {
 				int pixel=pixels_raw[i*height+j];
