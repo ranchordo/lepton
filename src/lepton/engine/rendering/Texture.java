@@ -61,6 +61,15 @@ public class Texture {
 			loaded[i]=false;
 		}
 	}
+	@Override public int hashCode() {
+		int ret=0;
+		for(int i=0;i<NUM_TEXTURES;i++) {
+			if(loaded[i]) {
+				ret+=texImages[i].hashCode();
+			}
+		}
+		return ret;
+	}
 	/**
 	 * Options are COLOR, BUMP, NORMAL. returns OpenGL-style int pointers to the texture buffers.
 	 */

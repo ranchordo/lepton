@@ -33,10 +33,6 @@ public class GLContextInitializer {
 	public static Transform cameraTransform;
 	public static boolean useGraphics=true;
 	/**
-	 * Yes, texture caching is a thing. Be careful.
-	 */
-	public static TextureCache activeTextureCache=new TextureCache();
-	/**
 	 * FrameRate
 	 */
 	public static float fr=-1;

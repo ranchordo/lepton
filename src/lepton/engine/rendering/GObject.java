@@ -641,16 +641,6 @@ public class GObject {
 				boolean texError=true;
 				for(String ext : new String[] {".png",".jpg"}) {
 					String search="3d/"+filename+ext;
-					boolean found=false;
-					for(Texture p : GLContextInitializer.activeTextureCache.cache) {
-						if(p.name.equals(search)) {
-							this.vmap.tex=p;
-							texError=false;
-							found=true;
-							break;
-						}
-					}
-					if(found) {break;}
 					try {
 						Logger.log(0,"loadOBJ(f) multi-ext texture search: Loading new texture stem "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
 						for(int i=0;i<Texture.NUM_TEXTURES;i++) {
@@ -662,7 +652,6 @@ public class GObject {
 						}
 						this.vmap.tex.name=search;
 						texError=false;
-						GLContextInitializer.activeTextureCache.cache.add(this.vmap.tex);
 						break;
 					} catch (NullPointerException | IllegalArgumentException e) {
 						Logger.log(2,e.toString());
@@ -685,13 +674,6 @@ public class GObject {
 		if(texAV()) {
 			String search="3d/"+filename+ext;
 			boolean found=false;
-			for(Texture p : GLContextInitializer.activeTextureCache.cache) {
-				if(p.name.equals(search)) {
-					this.vmap.tex=p;
-					found=true;
-					break;
-				}
-			}
 			if(found) {return;}
 			try {
 				Logger.log(0,"loadTexture(f,e) file search: Loading new texture stem "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
@@ -704,7 +686,6 @@ public class GObject {
 					}
 				}
 				this.vmap.tex.name=search;
-				GLContextInitializer.activeTextureCache.cache.add(this.vmap.tex);
 			} catch (NullPointerException | IllegalArgumentException e) {
 				Logger.log(2,e.toString());
 			}

@@ -18,6 +18,7 @@ public class TextureImage {
 	public int height;
 	private ByteBuffer pixels;
 	public BufferedImage bi;
+	public int hashCode=-1;
 	
 	private Graphics initBI(BufferedImage input) { //Initialize internal BufferedImage with an input BI
 		bi=input;
@@ -25,6 +26,9 @@ public class TextureImage {
 		width=bi.getWidth();
 		height=bi.getHeight();
 		return g;
+	}
+	@Override public int hashCode() {
+		return (hashCode!=-1)?hashCode:bi.hashCode();
 	}
 	public void create(BufferedImage in) {
 		this.initBI(in);
@@ -46,6 +50,7 @@ public class TextureImage {
 		for(int i=0;i<width;i++) {
 			for(int j=0;j<height;j++) {
 				int pixel=pixels_raw[i*height+j];
+				hashCode+=pixel;
 				pixels.put((byte)((pixel >>16)&0xFF));
 				pixels.put((byte)((pixel >> 8)&0xFF));
 				pixels.put((byte)((pixel     )&0xFF));
