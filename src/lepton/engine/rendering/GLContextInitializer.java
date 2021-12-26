@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL;
 
 import com.bulletphysics.linearmath.Transform;
 
+import lepton.cpshlib.CPSHLoader;
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.BloomHandler;
 import lepton.util.LeptonUtil;
@@ -26,6 +27,8 @@ public class GLContextInitializer {
 	public static float fov=90;
 	public static Matrix4f proj_matrix;
 	public static ShaderDataCompatible activeShader;
+	public static ShaderLoader shaderLoader=new ShaderLoader();
+	public static CPSHLoader cpshLoader=new CPSHLoader();
 	/**
 	 * Default graphical rendering shader.
 	 */

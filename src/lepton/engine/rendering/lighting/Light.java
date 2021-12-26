@@ -21,8 +21,8 @@ public class Light implements Serializable {
 		this.type=type_;
 	}
 	public Light(int type_, Vector3f prop_, Vector4f intensity_) {
-		this.intensity=intensity_;
-		this.prop=prop_;
+		this.intensity.set(intensity_);
+		this.prop.set(prop_);
 		this.type=type_;
 	}
 	int type=0;

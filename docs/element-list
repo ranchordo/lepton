@@ -2,9 +2,13 @@ unnamed package
 lepton.cpshlib
 lepton.engine.animation
 lepton.engine.audio
+lepton.engine.graphics2d.tiles
+lepton.engine.graphics2d.util
 lepton.engine.physics
 lepton.engine.rendering
+lepton.engine.rendering.instanced
 lepton.engine.rendering.lighting
+lepton.engine.util
 lepton.optim.objpoollib
 lepton.optim.tensorlib.main
 lepton.tests

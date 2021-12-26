@@ -67,22 +67,15 @@ public class LeptonUtil {
 	 * Get an InputStream but if the filename has " integrated" on the end it will fetch it from inside the jar.
 	 */
 	public static InputStream getOptionallyIntegratedStream(String resource, String ends) throws FileNotFoundException {
-		try {
-			if(!resource.endsWith(" integrated")) {
-				return new FileInputStream(LeptonUtil.getExternalPath()+"/"+resource+ends);
-			} else {
-				resource=resource.substring(0,resource.length()-11);
-				InputStream ret=LeptonUtil.class.getResourceAsStream("/"+resource+ends);
-				if(ret==null) {
-					throw new FileNotFoundException("/"+resource+ends+" integrated does not appear to exist.");
-				}
-				return ret;
+		if(!resource.endsWith(" integrated")) {
+			return new FileInputStream(LeptonUtil.getExternalPath()+"/"+resource+ends);
+		} else {
+			resource=resource.substring(0,resource.length()-11);
+			InputStream ret=LeptonUtil.class.getResourceAsStream("/"+resource+ends);
+			if(ret==null) {
+				throw new FileNotFoundException("/"+resource+ends+" integrated does not appear to exist.");
 			}
-		} catch (FileNotFoundException e) {
-			throw e;
-		} catch (IOException e) {
-			Logger.log(4,e.toString(),e);
-			return null;
+			return ret;
 		}
 	}
 	/**
@@ -206,6 +199,26 @@ public class LeptonUtil {
 	 */
 	public static String getJarPath() {
 		return locationReference.getProtectionDomain().getCodeSource().getLocation().getPath().replace("\\", "/").replace("%20", " ");
+	}
+	/**
+	 * Get a hex representation for the hashcode of an object. Why? Debugging.
+	 */
+	public static String getHashCodeHex(Object o) {
+		if(o==null) {
+			return "null";
+		} else {
+			return Integer.toHexString(o.hashCode());
+		}
+	}
+	/**
+	 * Get a hex representation for the identity hashcode of an object. Why? Debugging.
+	 */
+	public static String getIHashCodeHex(Object o) {
+		if(o==null) {
+			return "null";
+		} else {
+			return Integer.toHexString(System.identityHashCode(o));
+		}
 	}
 	/**
 	 * Milliseconds since... well... something.

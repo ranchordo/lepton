@@ -12,7 +12,7 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.system.MemoryStack;
 
-import lepton.engine.rendering.InstanceAccumulator;
+import lepton.engine.rendering.instanced.InstanceAccumulator;
 import lepton.util.advancedLogger.Logger;
 
 public abstract class ShaderDataCompatible {
@@ -105,7 +105,7 @@ public abstract class ShaderDataCompatible {
 		locationCache.put(name,ret);
 		return ret;
 	}
-	public SSBO generateNewSSBO(String name, long initialLength) {
+	public SSBO generateNewSSBO(String name, long initialLengthBytes) {
 		SSBO out=new SSBO();
 		out.buffer=glGenBuffers();
 		out.id=SSBOId;
@@ -119,7 +119,7 @@ public abstract class ShaderDataCompatible {
 		}
 		ssbo.put(name,out);
 		glShaderStorageBlockBinding(program(), out.location, out.id);
-		initSSBOData(initialLength,out);
+		initSSBOData(initialLengthBytes,out);
 		return out;
 	}
 	/**
@@ -141,9 +141,9 @@ public abstract class ShaderDataCompatible {
 		glShaderStorageBlockBinding(program(), out.location, out.id);
 		return out;
 	}
-	public void initSSBOData(long size, SSBO ssbo) {
+	public void initSSBOData(long sizeBytes, SSBO ssbo) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
-		glBufferData(GL_SHADER_STORAGE_BUFFER,size,GL_DYNAMIC_DRAW);
+		glBufferData(GL_SHADER_STORAGE_BUFFER,sizeBytes,GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	}
@@ -169,7 +169,7 @@ public abstract class ShaderDataCompatible {
 				Logger.log(4,"Buffer unmap failure");
 			}
 		} catch (Throwable e) {
-			Logger.log(0,"We caught it. No resource leak.");
+			Logger.log(0,"We caught an exception during a mapped buffer period. No resource leak.");
 			glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 			throw e;
 		}
@@ -224,7 +224,7 @@ public abstract class ShaderDataCompatible {
 				Logger.log(4,"Buffer unmap failure");
 			}
 		} catch (Throwable e) {
-			Logger.log(0,"We caught it. No resource leak.");
+			Logger.log(0,"We caught an exception during a mapped buffer period. No resource leak.");
 			glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 			throw e;
 		}

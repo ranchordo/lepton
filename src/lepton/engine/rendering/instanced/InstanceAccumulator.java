@@ -1,4 +1,4 @@
-package lepton.engine.rendering;
+package lepton.engine.rendering.instanced;
 
 import java.nio.FloatBuffer;
 
@@ -21,7 +21,7 @@ public class InstanceAccumulator {
 	/**
 	 * 0: no merge. 1: id merge. 2: full object+buffer merge.
 	 */
-	public static byte mergeSSBOsOnDuplicate=FULL_MERGE;
+	public static byte mergeSSBOsOnDuplicate=NO_MERGE;
 	public boolean runAggressiveChangeCheck=false;
 	public boolean hasDataChanged() {
 		return dataChanged;

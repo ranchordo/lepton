@@ -2,16 +2,13 @@ package lepton.engine.rendering.lighting;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import org.lwjgl.BufferUtils;
-
-import static org.lwjgl.opengl.GL46.GL_WRITE_ONLY;
+import org.lwjgl.opengl.GL43;
 
 import lepton.cpshlib.SSBO;
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.GLContextInitializer;
-import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
@@ -19,7 +16,7 @@ import lepton.util.advancedLogger.Logger;
  */
 public class Lighting {
 	public static final int MAX_LIGHTS=50;
-	private static HashSet<Light> lights=new HashSet<Light>();
+	private static ArrayList<Light> lights=new ArrayList<Light>();
 	
 	public static void addLight(Light light) {
 		if(light==null) {
@@ -76,33 +73,35 @@ public class Lighting {
 		}
 		shader.setUniform1i("num_lights",fbuffer.capacity()/Light.LIGHT_SIZE_FLOATS);
 		shader.applySSBO(shader.getLightingDataSSBO());
+		
 	}
 	/**
 	 * Update the lighting data for a single light.
 	 */
-	public static void updateUniforms(Light light) {
-		FloatBuffer fb=ShaderDataCompatible.mappify(firstSSBO,GL_WRITE_ONLY); {
-			int index=light.lightID*Light.LIGHT_SIZE_FLOATS;
-			fb.position(index);
-			fbuffer.put((float)light.type);
-			
-			fbuffer.put(0.0f);
-			fbuffer.put(0.0f);
-			fbuffer.put(0.0f);
-			
-			fbuffer.put(light.prop.x);
-			fbuffer.put(light.prop.y);
-			fbuffer.put(light.prop.z);
-			fbuffer.put(0.0f);
-			
-			fbuffer.put(light.intensity.x);
-			fbuffer.put(light.intensity.y);
-			fbuffer.put(light.intensity.z);
-			fbuffer.put(light.intensity.w);
-		} ShaderDataCompatible.unMappify();
+	public static void updateLight(Light light) {
+		if(firstSSBO==null) {return;}
+		int index=light.lightID*Light.LIGHT_SIZE_FLOATS;
+		fbuffer.position(index);
+		fbuffer.put((float)light.type);
+		
+		fbuffer.put(0.0f);
+		fbuffer.put(0.0f);
+		fbuffer.put(0.0f);
+		
+		fbuffer.put(light.prop.x);
+		fbuffer.put(light.prop.y);
+		fbuffer.put(light.prop.z);
+		fbuffer.put(0.0f);
+		
+		fbuffer.put(light.intensity.x);
+		fbuffer.put(light.intensity.y);
+		fbuffer.put(light.intensity.z);
+		fbuffer.put(light.intensity.w);
 	}
-	public static void updateUniforms() {
-		reinitBuffers();
+	public static void updateAllLights() {
+		for(Light light : lights) {
+			updateLight(light);
+		}
 	}
 	/**
 	 * Whenever you add or remove a light. ***Automatically done in addLight and removeLight***.
