@@ -75,6 +75,9 @@ public class GLContextInitializer {
 		fr=1.0f/fp;
 		calculatingTiming=false;
 	}
+	public static String getGPUName() {
+		return glGetString(GL_RENDERER);
+	}
 	private static byte errorCount=0;
 	/**
 	 * Used to check whether timing has been calculated. Be careful: fp and fr will be -1 for the first frame.
@@ -172,6 +175,7 @@ public class GLContextInitializer {
 		glViewport(0,0,winW,winH);
 		//Init handlers:
 		BloomHandler.init();
+		Logger.log(0,"Initialized GL Context on device "+getGPUName());
 	}
 	public static void doCursor(long win, boolean grabbed, boolean hidden) {
 		if(!grabbed && !hidden) {glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}

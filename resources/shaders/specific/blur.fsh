@@ -1,6 +1,6 @@
 #version 330 core
   
-varying vec2 TexCoords;
+in vec2 TexCoords;
 
 uniform sampler2D image;
   

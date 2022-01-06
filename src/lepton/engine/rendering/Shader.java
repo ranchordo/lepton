@@ -29,6 +29,14 @@ public class Shader extends ShaderDataCompatible {
 		defaults.put("iNoise",2);
 		defaultsInited=true;
 	}
+	private static void printShaderError(String fname, String ext, int prog) {
+		String error=glGetShaderInfoLog(prog);
+		if(error.isEmpty()) {
+			Logger.log(4,fname+ext+" did not compile, but the error output was blank. This typically means that your graphics driver is incorrectly configured. "
+					+ "If you are using a system with two graphics cards, make sure the correct one is being used. (this is commonly caused from intel integrated)");
+		}
+		Logger.log(4,"In "+fname+ext+": "+error);
+	}
 	private static boolean defaultsInited=false;
 	public static final boolean IGNORE_MISSING=true;
 	private int program;
@@ -53,14 +61,14 @@ public class Shader extends ShaderDataCompatible {
 		glShaderSource(vs, readFile(fname+".vsh"));
 		glCompileShader(vs);
 		if(glGetShaderi(vs, GL_COMPILE_STATUS) != 1) {
-			Logger.log(4,"In "+fname+".vsh: "+glGetShaderInfoLog(vs));
+			printShaderError(fname,".vsh",vs);
 		}
 		
 		fs=glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fs, readFile(fname+".fsh"));
 		glCompileShader(fs);
 		if(glGetShaderi(fs, GL_COMPILE_STATUS) != 1) {
-			Logger.log(4,"In "+fname+".fsh: "+glGetShaderInfoLog(fs));
+			printShaderError(fname,".fsh",fs);
 		}
 		
 		glAttachShader(program,vs);
@@ -73,7 +81,7 @@ public class Shader extends ShaderDataCompatible {
 			glShaderSource(gs,geoShader);
 			glCompileShader(gs);
 			if(glGetShaderi(gs, GL_COMPILE_STATUS) != -1) {
-				Logger.log(4,"In "+fname+".gsh: "+glGetShaderInfoLog(gs));
+				printShaderError(fname,".gsh",gs);
 			}
 			glAttachShader(program,gs);
 		}
