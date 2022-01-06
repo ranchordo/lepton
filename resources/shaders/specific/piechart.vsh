@@ -12,11 +12,11 @@ layout (std140) buffer info_buffer {
 };
 
 
-attribute vec3 glv;
-attribute vec2 mtc0;
+in vec3 glv;
+in vec2 mtc0;
 
-varying vec2 texcoords;
-varying float instanceID;
+out vec2 texcoords;
+out float instanceID;
 uniform mat4 proj_matrix;
 
 
