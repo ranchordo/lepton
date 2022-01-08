@@ -2,7 +2,7 @@
 
 layout (location = 0) out vec4 FragColor;
 
-in vec2 texcoords;
+varying vec2 texcoords;
 
 uniform float exposure;
 uniform float gamma;

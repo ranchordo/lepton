@@ -3,7 +3,7 @@
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
-in vec2 texcoords;
+varying vec2 texcoords;
 
 uniform sampler2D screen;
 uniform float bloom_thshld=1.0;

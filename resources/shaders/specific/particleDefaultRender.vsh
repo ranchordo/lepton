@@ -5,11 +5,11 @@ layout (std140) buffer particles_buffer {
 };
 
 
-in vec3 glv;
-in vec2 mtc0;
+attribute vec3 glv;
+attribute vec2 mtc0;
 
-out vec2 texcoords;
-out int instanceID;
+varying vec2 texcoords;
+varying int instanceID;
 uniform mat4 proj_matrix;
 uniform mat4 world2view;
 

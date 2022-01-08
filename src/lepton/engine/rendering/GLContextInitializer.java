@@ -15,7 +15,6 @@ import lepton.cpshlib.CPSHLoader;
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.BloomHandler;
 import lepton.util.LeptonUtil;
-import lepton.util.advancedLogger.Logger;
 
 /**
  * Serves as a rendering and OpenGL general utility.
@@ -67,9 +66,6 @@ public class GLContextInitializer {
 		fp=(float)((double)(LeptonUtil.micros()-starttm)/1000000.0);
 		fr=1.0f/fp;
 		calculatingTiming=false;
-	}
-	public static String getGPUName() {
-		return glGetString(GL_RENDERER);
 	}
 	private static byte errorCount=0;
 	/**
@@ -160,7 +156,6 @@ public class GLContextInitializer {
 		
 		//Init handlers:
 		BloomHandler.init();
-		Logger.log(0,"Initialized GL Context on device "+getGPUName());
 	}
 	public static void doCursor(long win, boolean grabbed, boolean hidden) {
 		if(!grabbed && !hidden) {glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}
