@@ -10,11 +10,11 @@ import lepton.util.advancedLogger.Logger;
  */
 public class PoolStrainer {
 	public static long CLEAN_PERIOD=10000000; //10 seconds
-	public static HashSet<AbstractObjectPool<?>> activePools=new HashSet<AbstractObjectPool<?>>();
+	public static HashSet<VariedAbstractObjectPool<?>> activePools=new HashSet<VariedAbstractObjectPool<?>>();
 	private static long lastClean=0;
 	private static int cleanAll_noCheck() {
 		int r=0;
-		for(AbstractObjectPool<?> p : activePools) {
+		for(VariedAbstractObjectPool<?> p : activePools) {
 			r+=p.cleanOld();
 		}
 		return r;

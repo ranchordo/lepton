@@ -2,10 +2,10 @@
 #define FALLOFF 0.1
 layout (location = 0) out vec4 FragColor;
 
-varying vec2 texcoords;
-varying int instanceID;
+in vec2 texcoords;
+in int instanceID;
 uniform int num_lights;
-varying vec4 world_position;
+in vec4 world_position;
 
 struct Light {
 	float type;

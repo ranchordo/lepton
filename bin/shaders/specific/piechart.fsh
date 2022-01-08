@@ -14,8 +14,8 @@ layout (std140) buffer info_buffer {
 	Info infos[];
 };
 
-varying vec2 texcoords;
-varying float instanceID;
+in vec2 texcoords;
+in float instanceID;
 
 void main() {
 	Info info=infos[int(instanceID)];
