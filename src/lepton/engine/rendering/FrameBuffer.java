@@ -19,7 +19,7 @@ public class FrameBuffer {
 	private int[] tbo;
 	private int rbo;
 	private int multiSample=-1;
-	private int[] attachList;
+	private IntBuffer ib;
 	private int format;
 	/**
 	 * Get an int-style pointer to the framebuffer, renderbuffer, or texturebuffer object.
@@ -43,32 +43,13 @@ public class FrameBuffer {
 	public FrameBuffer(int ms) {
 		this(ms,1,GL_RGBA16F);
 	}
-	public void setNumTexBuffers(int ntbo) {
-		if(!flexibleBuffers) {
-			Logger.log(4,"Tried to get the raw TBO list without a flexible buffer config. Init with ntbo=-1.");
-		}
-		if(tbo!=null) {
-			if(tbo.length==ntbo) {
-				return; //Nothing changed, why wipe everything?
-			}
-		}
-		tbo=new int[ntbo];
-		attachList=new int[ntbo];
-		for(int i=0;i<ntbo;i++) {
-			attachList[i]=GL_COLOR_ATTACHMENT0+i;
-		}
-	}
-	public int[] getTBOs() {
-		if(!flexibleBuffers) {
-			Logger.log(4,"Tried to get the raw TBO list without a flexible buffer config. Init with ntbo=-1.");
-		}
-		return tbo;
-	}
-	private boolean flexibleBuffers=false;
 	/**
 	 * ms is multisample for MSAA (MultiSample AntiAliasing, used to remove jagged edges). ntbo is the Number of TBOs. Format is the storage format. Defaults to GL_RGBA16F. Other useful ones are GL_RGBA8
 	 */
 	public FrameBuffer(int ms, int ntbo, int format) {
+		if(ntbo<1) {
+			throw new IllegalArgumentException("What are you doing? We can't have less than one textureBuffer!!!");
+		}
 		try(MemoryStack stack=MemoryStack.stackPush()){
 			IntBuffer m=stack.mallocInt(1);
 			glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,m);
@@ -80,28 +61,27 @@ public class FrameBuffer {
 		int texParam=(ms>0)?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D;
 		fbo=glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER,fbo);
-		if(ntbo!=-1) {
-			flexibleBuffers=true;
-			tbo=new int[ntbo];
-			attachList=new int[ntbo];
-			for(int i=0;i<ntbo;i++) {
-				tbo[i]=glGenTextures();
-				glBindTexture(texParam,tbo[i]);
-				if(ms>0) {
-					glTexImage2DMultisample(texParam,ms,format,GLContextInitializer.winW,GLContextInitializer.winH,true);
-				} else {
-					glTexImage2D(texParam,0,format,GLContextInitializer.winW,GLContextInitializer.winH,0,GL_RGBA,GL_FLOAT,(FloatBuffer)null);
-				}
-				this.format=format;
-				glTexParameteri(texParam,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-				glTexParameteri(texParam,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-				glTexParameteri(texParam,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-			    glTexParameteri(texParam,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-				
-				glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0+i,texParam,tbo[i],0);
-				attachList[i]=GL_COLOR_ATTACHMENT0+i;
+		tbo=new int[ntbo];
+		int[] attachList=new int[ntbo];
+		for(int i=0;i<ntbo;i++) {
+			tbo[i]=glGenTextures();
+			glBindTexture(texParam,tbo[i]);
+			if(ms>0) {
+				glTexImage2DMultisample(texParam,ms,format,GLContextInitializer.winW,GLContextInitializer.winH,true);
+			} else {
+				glTexImage2D(texParam,0,format,GLContextInitializer.winW,GLContextInitializer.winH,0,GL_RGBA,GL_FLOAT,(FloatBuffer)null);
 			}
+			this.format=format;
+			glTexParameteri(texParam,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+			glTexParameteri(texParam,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+			glTexParameteri(texParam,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		    glTexParameteri(texParam,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+			
+			glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0+i,texParam,tbo[i],0);
+			attachList[i]=GL_COLOR_ATTACHMENT0+i;
 		}
+		ib=BufferUtils.createIntBuffer(tbo.length);
+		LeptonUtil.asIntBuffer(attachList,ib);
 		rbo=glGenRenderbuffers();
 		glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
 		if(ms>0) {
@@ -166,7 +146,7 @@ public class FrameBuffer {
 	public void blitTo(FrameBuffer buffer, int id) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.fbo);
-		glDrawBuffers(buffer.attachList);
+		glDrawBuffers(buffer.ib);
 		glReadBuffer(GL_COLOR_ATTACHMENT0+id);
 		glBlitFramebuffer(0,0,GLContextInitializer.winW,GLContextInitializer.winH,0,0,GLContextInitializer.winW,GLContextInitializer.winH,GL_COLOR_BUFFER_BIT,GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -189,7 +169,7 @@ public class FrameBuffer {
 	 */
 	public void bind() {
 		glBindFramebuffer(GL_FRAMEBUFFER,fbo);
-		glDrawBuffers(attachList);
+		glDrawBuffers(ib);
 	}
 	public static void unbind_all() {
 		glBindFramebuffer(GL_FRAMEBUFFER,0);

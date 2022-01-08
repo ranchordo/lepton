@@ -4,9 +4,8 @@ import lepton.util.LeptonUtil;
 
 public class PoolElement<T> {
 	private long lastToggle;
-	public VariedAbstractObjectPool<T> parentPool;
+	protected AbstractObjectPool<T> parentPool;
 	protected T o;
-	public int desc;
 	/**
 	 * Miscellaneous Data Object
 	 */

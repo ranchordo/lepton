@@ -5,7 +5,7 @@ import lepton.util.LeptonUtil;
 /**
  * PoolInitCreator that works by cloning a prototype object.
  */
-public class PoolInitCreator_clone<T extends Cloneable> extends PoolInitCreator<T> {  //PoolInitCreator that just clones stuff
+public class PoolInitCreator_clone<T extends Cloneable> implements PoolInitCreator<T> {  //PoolInitCreator that just clones stuff
 	T prototype;
 	public PoolInitCreator_clone(T p) {
 		prototype=p;
