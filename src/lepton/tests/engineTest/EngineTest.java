@@ -91,7 +91,7 @@ public class EngineTest {
 		CleanupTasks.add(()->mainConsoleWindow.close());
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
 		
-		GLContextInitializer.initializeGLContext(true,800,600,false,"COMPLETE Engine test (incl CPSHLib test)");
+		GLContextInitializer.initializeGLContext(true,800,600,false,"Physics, graphics, sound, computation, and instanced and non-instanced 2d and 3d rendering");
 		Shader screen=new Shader("screen");
 		Shader screen_basic_bloom=new Shader("screen_basic_bloom");
 		Screen blindfold=new Screen();
