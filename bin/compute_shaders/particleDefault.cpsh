@@ -1,0 +1,39 @@
+#version 430 core
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+uniform vec3 invocation_dimensions=vec3(0);
+
+layout (std140) buffer particles_buffer {
+	vec4 particles[];
+};
+
+uniform vec3 origin;
+uniform int toemit;
+uniform int stindex;
+uniform float time;
+
+float rand(float fli) {
+    uint i=uint(fli);
+    i^=2747636419u;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    return fract(float(i)/4294967295.0);
+}
+
+void main() {
+	int particleID=int(gl_GlobalInvocationID.x+(invocation_dimensions.x*gl_GlobalInvocationID.y)+(invocation_dimensions.x*invocation_dimensions.y*gl_GlobalInvocationID.z));
+	int nparticles=int(invocation_dimensions.x*invocation_dimensions.y*invocation_dimensions.z);
+	particles[particleID].y=particles[particleID].y+(0.03*rand(particleID));
+	particles[particleID].x=particles[particleID].x+(0.01*(rand(particleID+4)*2-1));
+	particles[particleID].z=particles[particleID].z+(0.01*(rand(particleID+3)*2-1));
+	
+	//Handle emission:
+	int a=stindex;
+	int b=int(mod(stindex+toemit,nparticles));
+	bool reEmit=((particleID>=min(a,b)) && (particleID<max(a,b))) ^^ (b<a);
+	particles[particleID]=(int(!reEmit)*particles[particleID])+(int(reEmit)*vec4(origin,time));
+}
