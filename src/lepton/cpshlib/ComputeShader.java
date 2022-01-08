@@ -1,4 +1,6 @@
 package lepton.cpshlib;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glDeleteShader;
 import static org.lwjgl.opengl.GL43.*;
 
 import java.io.BufferedReader;
@@ -17,11 +19,17 @@ public class ComputeShader extends ShaderDataCompatible {
 	public static final boolean IGNORE_MISSING=true;
 	private int program;
 	private int cs;
+	@Override public void delete() {
+		glDeleteShader(cs);
+		glDeleteProgram(program);
+		rdrt();
+	}
 	private String fname;
 	public String getFname() {return fname;}
 	public ComputeShader(String fname) {
 		this.fname=fname;
 		program=glCreateProgram();
+		setInitialFname(fname);
 		syncRequiredShaderDataValues(program, IGNORE_MISSING);
 		cs=glCreateShader(GL_COMPUTE_SHADER);
 		glShaderSource(cs, readFile(fname+".cpsh"));
@@ -40,6 +48,7 @@ public class ComputeShader extends ShaderDataCompatible {
 		if(glGetProgrami(program,GL_VALIDATE_STATUS)!=1) {
 			Logger.log(4,glGetProgramInfoLog(program));
 		}
+		adrt();
 		Logger.log(0,"Loaded compute shader \""+fname+"\" successfully.");
 	}
 	private static Vector4f ret=new Vector4f();

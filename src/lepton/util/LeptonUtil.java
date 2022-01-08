@@ -3,11 +3,12 @@ package lepton.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
+
+import org.lwjgl.opengl.GL43;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
@@ -25,6 +26,18 @@ import lepton.util.advancedLogger.Logger;
 
 public class LeptonUtil {
 	public static Class<?> locationReference=LeptonUtil.class;
+	public static int getTotalGPUMemory() {
+		IntBuffer ib=BufferUtils.createIntBuffer(1);
+		GL43.glGetIntegerv(0x9048,ib);
+		return ib.get(0);
+	}
+	public static int getUsedGPUMemory() {
+		IntBuffer ib=BufferUtils.createIntBuffer(1);
+		GL43.glGetIntegerv(0x9049,ib);
+		int av=ib.get(0);
+		GL43.glGetIntegerv(0x9048,ib);
+		return ib.get(0)-av;
+	}
 	/**
 	 * Shove a float[] into a floatBuffer of the same size.
 	 */

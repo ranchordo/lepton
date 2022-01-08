@@ -8,16 +8,18 @@ import java.nio.ByteBuffer;
 
 import org.lwjgl.BufferUtils;
 
+import lepton.engine.util.Deletable;
+
 /**
  * Backend OpenGL texture storage object. You shouldn't have to use this.
  */
-public class TextureImage {
+public class TextureImage extends Deletable {
 	private int id;
 	public int binding;
 	public int width;
 	public int height;
 	private ByteBuffer pixels;
-	public BufferedImage bi;
+	private BufferedImage bi=null;
 	public int hashCode=-1;
 	
 	private Graphics initBI(BufferedImage input) { //Initialize internal BufferedImage with an input BI
@@ -37,24 +39,23 @@ public class TextureImage {
 	public TextureImage(int b) {
 		id=glGenTextures();
 		binding=b;
-		bi=null;
-		
 		width=0;
 		height=0;
+		adrt();
 	}
 	private void applyBI() { //Convert the internal BI to a bytebuffer and upload
-		int[] pixels_raw=new int[width*height*4];
-		pixels_raw=bi.getRGB(0, 0, width, height, null, 0, width);
+		//int[] pixels_raw=new int[width*height*4];
+		int[] pixels_raw=bi.getRGB(0, 0, width, height, null, 0, width);
 		pixels=BufferUtils.createByteBuffer(width*height*4);
 		hashCode=-1;
 		for(int i=0;i<width;i++) {
 			for(int j=0;j<height;j++) {
 				int pixel=pixels_raw[i*height+j];
 				hashCode+=pixel;
-				pixels.put((byte)((pixel >>16)&0xFF));
-				pixels.put((byte)((pixel >> 8)&0xFF));
-				pixels.put((byte)((pixel     )&0xFF));
-				pixels.put((byte)((pixel >>24)&0xFF));
+				pixels.put((byte)((pixel>>16)&0xFF));
+				pixels.put((byte)((pixel>> 8)&0xFF));
+				pixels.put((byte)((pixel    )&0xFF));
+				pixels.put((byte)((pixel>>24)&0xFF));
 			}
 		}
 		pixels.flip();
@@ -64,6 +65,7 @@ public class TextureImage {
 	}
 	public void delete() {
 		glDeleteTextures(id);
+		rdrt();
 	}
 	private void upload() {
 		glActiveTexture(GL_TEXTURE0+binding);

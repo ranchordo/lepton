@@ -23,6 +23,7 @@ uniform float useLighting=2;
 uniform mat4 world2view=mat4(1.0);
 uniform int textureUse=0;
 
+<<<<<<< Updated upstream
 in vec2 texCoords;
 in vec4 intensity;
 in vec4 col;
@@ -32,6 +33,17 @@ in vec3 normal_orig;
 in mat3 TBN;
 in vec4 material_v;
 in vec3 campos;
+=======
+varying vec2 texCoords;
+varying vec4 intensity;
+varying vec4 col;
+varying vec3 world_position;
+varying vec3 view_position;
+varying vec3 normal_orig;
+varying mat3 TBN;
+varying vec4 material_v;
+varying vec3 campos;
+>>>>>>> Stashed changes
 uniform sampler2D albedo;
 uniform sampler2D normal;
 void main() {

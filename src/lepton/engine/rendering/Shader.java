@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.Lighting;
+import lepton.engine.util.Deletable;
 import lepton.util.advancedLogger.Logger;
 
 public class Shader extends ShaderDataCompatible {
@@ -41,7 +42,14 @@ public class Shader extends ShaderDataCompatible {
 	private int program;
 	private int vs;
 	private int fs;
-	private int gs;
+	private int gs=-1;
+	@Override public void delete() {
+		glDeleteShader(vs);
+		glDeleteShader(fs);
+		if(gs!=-1) {glDeleteShader(gs);}
+		glDeleteProgram(program);
+		rdrt();
+	}
 	private String fname;
 	public String getFname() {return fname;}
 	public HashMap<String,Integer> locationCache=new HashMap<String,Integer>();
@@ -96,6 +104,7 @@ public class Shader extends ShaderDataCompatible {
 		}
 		this.setInitialFname(fname);
 		Logger.log(0,"Loaded shader \""+fname+"\" successfully.");
+		adrt();
 	}
 	public void bind() {
 		if(GLContextInitializer.activeShader==this) {

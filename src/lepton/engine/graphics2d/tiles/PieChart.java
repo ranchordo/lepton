@@ -1,16 +1,14 @@
 package lepton.engine.graphics2d.tiles;
 
 import java.awt.Color;
-import java.util.HashSet;
 
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
-import lepton.engine.graphics2d.util.InstancedRenderConfig2d;
-import lepton.engine.graphics2d.util.InstancedRenderer2d;
-import lepton.engine.rendering.instanced.InstanceAccumulator;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Shader;
+import lepton.engine.rendering.instanced.InstanceAccumulator;
+import lepton.engine.rendering.instanced.InstancedRenderer;
 
 public class PieChart extends Tile2d {
 	public static Shader pieChartShader;
@@ -19,7 +17,7 @@ public class PieChart extends Tile2d {
 	public Vector3f[] rgbs=null;
 	public float width=0.4f;
 	private InstanceAccumulator ia;
-	public PieChart(int elements, float nx, float ny, float nw, InstancedRenderer2d sl) {
+	public PieChart(int elements, float nx, float ny, float nw, InstancedRenderer sl) {
 		if(pieChartShader==null) {
 			pieChartShader=GLContextInitializer.shaderLoader.load("specific/piechart");
 		}

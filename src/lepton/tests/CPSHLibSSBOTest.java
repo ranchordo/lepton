@@ -11,6 +11,7 @@ import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;
 import lepton.engine.rendering.Shader;
 import lepton.util.CleanupTasks;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 public class CPSHLibSSBOTest {

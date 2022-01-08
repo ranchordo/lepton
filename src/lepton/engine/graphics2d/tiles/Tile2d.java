@@ -9,10 +9,10 @@ import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
-import lepton.engine.graphics2d.util.InstancedRenderer2d;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.GObject;
 import lepton.engine.rendering.Tri;
+import lepton.engine.rendering.instanced.InstancedRenderer;
 import lepton.util.InputHandler;
 
 public abstract class Tile2d {
@@ -84,7 +84,7 @@ public abstract class Tile2d {
 	public static float ratio2viewportY(float y) {
 		return (float) (2.0f*y*Math.tan(Math.toRadians(GLContextInitializer.fov/2.0f)));
 	}
-	public static InstancedRenderer2d renderer=new InstancedRenderer2d();
+	public static InstancedRenderer renderer=new InstancedRenderer("default_2d");
 	public float x;
 	public float y;
 	public PosMode posMode=PosMode.CENTER;

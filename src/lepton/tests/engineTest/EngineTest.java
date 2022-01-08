@@ -19,11 +19,12 @@ import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;
 import lepton.engine.rendering.Shader;
 import lepton.engine.rendering.instanced.InstanceAccumulator;
-import lepton.engine.rendering.instanced.InstancedRenderer3d;
-import lepton.engine.rendering.instanced.InstancedRenderer3d.InstancedRenderRoutine3d;
+import lepton.engine.rendering.instanced.InstancedRenderer;
+import lepton.engine.rendering.instanced.InstancedRenderer.InstancedRenderRoutine;
 import lepton.engine.rendering.lighting.BloomHandler;
 import lepton.engine.rendering.lighting.Light;
 import lepton.engine.rendering.lighting.Lighting;
+import lepton.engine.util.Deletable;
 import lepton.optim.objpoollib.DefaultVecmathPools;
 import lepton.optim.objpoollib.PoolElement;
 import lepton.optim.objpoollib.PoolStrainer;
@@ -68,8 +69,8 @@ public class EngineTest {
 	public static PhysicsWorld physics=new PhysicsWorld();
 	public static TimeProfiler timeProfiler=new TimeProfiler("Physics","Main render","Post-render","SwapBuffers","2D render","Misc");
 	public static Fonts fonts=new Fonts();
-	public static InstancedRenderer3d instancedRenderer=new InstancedRenderer3d();
-	private static InstancedRenderRoutine3d renderRoutine=new InstancedRenderRoutine3d() {
+	public static InstancedRenderer instancedRenderer=new InstancedRenderer("main_3d");
+	private static InstancedRenderRoutine renderRoutine=new InstancedRenderRoutine() {
 		@Override public void run() {
 			cube.render();
 		}
@@ -80,8 +81,10 @@ public class EngineTest {
 	 */
 	public static void Main() {
 		Logger.setCleanupTask(()->CleanupTasks.cleanUp());
+		CleanupTasks.add(()->GLContextInitializer.cleanAllRemainingGLData());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
 		CleanupTasks.add(()->Audio.cleanUp()); //----------IMPORTANT----------//
+		
 		
 		ConsoleWindow mainConsoleWindow=new ConsoleWindow(false,640,480,"Engine test console",(s)->recieveCommand(s),"Engine test console ready.\nStarting engine test.");
 		mainConsoleWindow.setVisible(true); //Console windows aren't required. Disable this one by deleting this whole group of lines.
@@ -91,14 +94,19 @@ public class EngineTest {
 		CleanupTasks.add(()->mainConsoleWindow.close());
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
 		
+<<<<<<< Updated upstream
 		GLContextInitializer.initializeGLContext(true,800,600,false,"COMPLETE Engine test (incl CPSHLib test)");
+=======
+		GLContextInitializer.initializeGLContext(true,1920,1080,false,"Physics, graphics, sound, computation, and instanced and non-instanced 2d and 3d rendering");
+		
+>>>>>>> Stashed changes
 		Shader screen=new Shader("screen");
 		Shader screen_basic_bloom=new Shader("screen_basic_bloom");
 		Screen blindfold=new Screen();
-		FrameBuffer fbo=new FrameBuffer(16,3,GL_RGBA16F);
+		FrameBuffer fbo=new FrameBuffer(0,3,GL_RGBA16F);
 		FrameBuffer interfbo=new FrameBuffer(0,2,GL_RGBA16F);
-		FrameBuffer interfbo2=new FrameBuffer(0,2,GL_RGBA8);
-		FrameBuffer interfbo3=new FrameBuffer(0,1,GL_RGBA8);
+		FrameBuffer interfbo2=new FrameBuffer(0,2,GL_RGBA16F);
+		FrameBuffer interfbo3=new FrameBuffer(0,1,GL_RGBA16F);
 		float exposure=9.0f;
 		float gamma=1.0f;
 		float bloom_thshld=0.8f;
@@ -118,6 +126,8 @@ public class EngineTest {
 		cube.initPhysics();
 		floor.initGeo();
 		floor.initPhysics();
+		floor.geo.g.zombify();
+		cube.geo.g.zombify();
 		
 		float amb=0.02f;
 		GLContextInitializer.cameraTransform=new Transform(new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1));
@@ -132,9 +142,9 @@ public class EngineTest {
 		
 		GLContextInitializer.defaultMainShader=new Shader("main_engineTest");
 		
-		DebugScreen debugScreen=new DebugScreen();
+		EngineTestScreen debugScreen=new EngineTestScreen();
 		debugScreen.init();
-		
+		glfwSwapInterval(0);
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			timeProfiler.clear();
 			timeProfiler.start(5);
@@ -151,7 +161,11 @@ public class EngineTest {
 			timeProfiler.start(0);
 			doCubeMovement(cube.geo.p,h);
 			timeProfiler.stop(0);
-			//System.out.println(cube.geo.p.body.getMotionState().getWorldTransform(new Transform()).getMatrix(new Matrix4f()));
+			timeProfiler.start(4);
+			debugScreen.logic();
+			debugScreen.render();
+			//System.out.println(GLContextInitializer.fr);
+			timeProfiler.stop(4);
 			timeProfiler.start(1);
 			fbo.bind();
 			glClearColor(0,0,0,1);
@@ -161,16 +175,13 @@ public class EngineTest {
 			instancedRenderer.renderInstanced(renderRoutine);
 			cube.postrender();
 			timeProfiler.stop(1);
-			timeProfiler.start(4);
-			debugScreen.logic();
-			debugScreen.render();
-			timeProfiler.stop(4);
+			
 			timeProfiler.start(2);
 			fbo.unbind();
 			
 			fbo.blitTo(interfbo,0,0);
 			interfbo2.bind();
-			glClearColor(1,0,1,1);
+			glClearColor(0,0,1,1);
 			glClear(GL_COLOR_BUFFER_BIT);
 			glDisable(GL_DEPTH_TEST);
 			screen_basic_bloom.setUniform1f("bloom_thshld",bloom_thshld);
@@ -198,8 +209,8 @@ public class EngineTest {
 			timeProfiler.stop(3);
 			timeProfiler.submit();
 			GLContextInitializer.timeCalcEnd();
+			System.out.println(EngineTest.timeProfiler.toString());
 		}
-		
 		CleanupTasks.cleanUp();
 	}
 	public static void main(String[] args) {
@@ -209,5 +220,6 @@ public class EngineTest {
 			e.printStackTrace();
 			Logger.log(4,e.toString()+", Logger-based stack trace is incorrect.",e);
 		}
+		Logger.log(1,"Successful usercode exit. Goodbye!");
 	}
 }

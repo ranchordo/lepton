@@ -65,6 +65,6 @@ public class SourcePool extends AbstractObjectPool<Source> {
 	}
 	@Override
 	public void handleDeletion(PoolElement<Source> i) {
-		i.o().close();
+		i.o().delete();
 	}
 }

@@ -12,10 +12,11 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.system.MemoryStack;
 
-import lepton.engine.rendering.instanced.InstanceAccumulator;
+import lepton.engine.rendering.GLContextInitializer;
+import lepton.engine.util.Deletable;
 import lepton.util.advancedLogger.Logger;
 
-public abstract class ShaderDataCompatible {
+public abstract class ShaderDataCompatible extends Deletable {
 	/**
 	 * Ignore when a uniform variable doesn't exist in the shader. If a uniform variable is unused in the shader this will also happen.
 	 */
@@ -30,12 +31,15 @@ public abstract class ShaderDataCompatible {
 	private int program_internal;
 	
 	private String initialFname="ERROR IN NAME";
-	
+	public abstract void delete();
 	/**
 	 * No usey.
 	 */
 	public void setInitialFname(String ifn) {
 		initialFname=ifn;
+	}
+	public String getInitialFname() {
+		return initialFname;
 	}
 	/**
 	 * No usey.
@@ -106,19 +110,7 @@ public abstract class ShaderDataCompatible {
 		return ret;
 	}
 	public SSBO generateNewSSBO(String name, long initialLengthBytes) {
-		SSBO out=new SSBO();
-		out.buffer=glGenBuffers();
-		out.id=SSBOId;
-		if(SSBOId>=Math.min(0xFF,getBindingLimits())) {
-			throw new IllegalStateException("Ya hit the SSBO limit. Nice");
-		}
-		SSBOId++;
-		out.location=getResourceLocation(name);
-		if(out.location==-1) {
-			Logger.log(2,name+" is not a valid shader SSBO binding point (generateNewSSBO). (From shader "+initialFname+")");
-		}
-		ssbo.put(name,out);
-		glShaderStorageBlockBinding(program(), out.location, out.id);
+		SSBO out=generateFromExistingSSBO(name,glGenBuffers());
 		initSSBOData(initialLengthBytes,out);
 		return out;
 	}
@@ -126,11 +118,17 @@ public abstract class ShaderDataCompatible {
 	 * Create linked SSBO sharing the same buffer.
 	 */
 	public SSBO generateFromExistingSSBO(String name, SSBO in) {
+		return generateFromExistingSSBO(name,in.buffer);
+	}
+	/**
+	 * Create linked SSBO sharing the same buffer.
+	 */
+	public SSBO generateFromExistingSSBO(String name, int inbuffer) {
 		SSBO out=new SSBO();
-		out.buffer=in.buffer;
+		out.buffer=inbuffer;
 		out.id=SSBOId;
 		if(SSBOId>=Math.min(0xFF,getBindingLimits())) {
-			throw new IllegalStateException("Ya hit the SSBO limit. Nice");
+			throw new IllegalStateException("SSBO binding limit.");
 		}
 		SSBOId++;
 		out.location=getResourceLocation(name);
@@ -142,7 +140,10 @@ public abstract class ShaderDataCompatible {
 		return out;
 	}
 	public void initSSBOData(long sizeBytes, SSBO ssbo) {
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
+		initSSBOData(sizeBytes,ssbo.buffer);
+	}
+	public static void initSSBOData(long sizeBytes, int ssbo) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo);
 		glBufferData(GL_SHADER_STORAGE_BUFFER,sizeBytes,GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -157,13 +158,14 @@ public abstract class ShaderDataCompatible {
 				Logger.log(4,"Ladies and gentlemen: We have issues.");
 			}
 			if(data.capacity()!=buffer.capacity()) {
-				Logger.log(3,"Uh... you realize this is a method for *copying*, right? Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
-				throw new IllegalArgumentException("Uh... you realize this is a method for *copying*, right? Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
+				Logger.log(3,"Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
+				throw new IllegalArgumentException("Input capacity was "+data.capacity()+", current data's capacity was "+buffer.capacity());
 			}
 			buffer.position(0);
-			for(int i=0;i<buffer.capacity();i++) {
-				buffer.put(data.get(i));
-			}
+			int pos=data.position();
+			data.position(0);
+			buffer.put(data);
+			data.position(pos);
 			//buffer.flip();
 			if(!glUnmapBuffer(GL_SHADER_STORAGE_BUFFER)) {
 				Logger.log(4,"Buffer unmap failure");
@@ -184,11 +186,17 @@ public abstract class ShaderDataCompatible {
 	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
 	 */
 	public static FloatBuffer mappify(SSBO ssbo, int mode) {
+		return mappify(ssbo.buffer,mode);
+	}
+	/**
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
+	 */
+	public static FloatBuffer mappify(int buffer, int mode) {
 		if(bufferMapped) {
 			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer when you're done. Is it really that difficult?");
 		}
 		FloatBuffer ret=null;
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER,buffer);
 		try {
 			ret=glMapBuffer(GL_SHADER_STORAGE_BUFFER, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
 			bufferMapped=true;

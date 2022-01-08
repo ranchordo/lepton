@@ -4,12 +4,12 @@ import lepton.engine.rendering.GObject;
 import lepton.engine.rendering.Shader;
 import lepton.engine.rendering.Texture;
 
-public class InstancedRenderConfig3d {
+public class InstancedRenderConfig {
 	public Shader shader;
 	public Texture tex;
 	public GObject geo;
 	public InstanceAccumulator instanceAccumulator;
-	public InstancedRenderConfig3d(Shader s, Texture i, GObject g, int objectSize, String ssbo_name) {
+	public InstancedRenderConfig(Shader s, Texture i, GObject g, int objectSize, String ssbo_name) {
 		shader=s;
 		tex=i;
 		geo=g;
@@ -24,10 +24,10 @@ public class InstancedRenderConfig3d {
 	}
 	@Override
 	public boolean equals(Object o) {
-		if(o instanceof InstancedRenderConfig3d) {
-			if(((InstancedRenderConfig3d)o).shader==this.shader) {
-				if(((InstancedRenderConfig3d)o).geo.hashCode()==this.geo.hashCode()) {
-					if(((InstancedRenderConfig3d)o).tex.hashCode()==this.tex.hashCode()) {
+		if(o instanceof InstancedRenderConfig) {
+			if(((InstancedRenderConfig)o).shader==this.shader) {
+				if(((InstancedRenderConfig)o).geo.hashCode()==this.geo.hashCode()) {
+					if(((InstancedRenderConfig)o).tex.hashCode()==this.tex.hashCode()) {
 						return true;
 					}
 				}
