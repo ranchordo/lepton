@@ -9,26 +9,35 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
 import org.lwjgl.BufferUtils;
 
+import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.linearmath.DefaultMotionState;
+import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 
 import lepton.engine.physics.PhysicsObject;
-import lepton.engine.util.Deletable;
 import lepton.optim.objpoollib.DefaultVecmathPools;
 import lepton.optim.objpoollib.PoolElement;
 import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
-public class GObject extends Deletable {
+public class GObject {
 	//Data types for VBO copying
 	public static final int VERTEX_DATA=0;
 	public static final int TEXTURE_DATA=1;
@@ -38,8 +47,6 @@ public class GObject extends Deletable {
 	public static final int MATERIAL_DATA=5;
 
 	public boolean useTex=false;
-	private boolean zombie=false;
-	public boolean isZombie() {return zombie;}
 	private ArrayList<Tri> tris=new ArrayList<Tri>();
 	public VertexMap vmap=new VertexMap();
 	public boolean fromOBJ=false;
@@ -52,7 +59,9 @@ public class GObject extends Deletable {
 	private boolean trisLocked=false;
 
 	public boolean useCulling=true;
+	public boolean hasAlpha=false;
 
+	public Vector3f scale=new Vector3f(1.0f,1.0f,1.0f);
 
 	private int v_id;
 	private int t_id;
@@ -62,7 +71,7 @@ public class GObject extends Deletable {
 
 	private int tan_id;
 	private int bit_id;
-	
+
 	/**
 	 * For instanced rendering. Use on things like particle systems (also use abstractObjectPool for those too, they're awesome).
 	 */
@@ -84,24 +93,10 @@ public class GObject extends Deletable {
 	/**
 	 * Clean up the data to avoid resource leaks.
 	 */
-	public void delete() {
+	public void clean() {
 		clearVBOs();
-		zombie=true;
-		rdrt();
-	}
-	private int zombieSize=-1;
-	/**
-	 * Convert to a zombie (an object that doesn't have any CPU-side data and is only cached GPU-side). Useful for reducing memory consumption for large models.
-	 */
-	public void zombify() {
-		unlock();
-		refresh();
-		lock();
-		zombie=true;
-		zombieSize=tris.size();
-		tris.clear();
-		glcolors_last=null;
-		glmatdata_last=null;
+		trisLocked=false;
+		clearTris();
 	}
 	public void clearTris() {
 		if(!trisLocked) {tris.clear();}
@@ -111,15 +106,10 @@ public class GObject extends Deletable {
 	}
 	public boolean getLocked() {return trisLocked;}
 	/**
-	 * Tri locking is so that we don't need to reinitialize buffers like an idiot on every frame. Having a definite number of triangles lets us optimize our buffer creation strategies.
+	 * Tri locking is so that we don't need to reinitialize buffers like an idiot on every frame. Having a finite list of triangles lets us optimize our buffer creation strategies.
 	 */
 	public void lock() {trisLocked=true;}
-	public void unlock() {
-		if(zombie) {
-			Logger.log(4,"Cannot unlock data for zombies. No data to unlock.");
-		}
-		trisLocked=false;
-	}
+	public void unlock() {trisLocked=false;}
 
 	private FloatBuffer vertex_data;
 	private FloatBuffer texture_data;
@@ -129,58 +119,52 @@ public class GObject extends Deletable {
 	private FloatBuffer tangent_data;
 	private FloatBuffer bitangent_data;
 	private FloatBuffer handleBufferCreation(FloatBuffer buffer, float[] data) {
-		if(data==null) {return null;}
 		if(buffer==null || buffer.capacity()<data.length) {
 			buffer=BufferUtils.createFloatBuffer(data.length+12);
 		}
 		LeptonUtil.asFloatBuffer(data,buffer);
 		return buffer;
 	}
-	private static void glBufferData_c(int a,FloatBuffer b,int c) {
-		if(b==null) {return;}
-		glBufferData(a,b,c);
-	}
 	public void copyData(int type, int mode) {
-		if(zombie) {Logger.log(4,"Can't copy data from a zombified object.");}
 		switch(type) {
 		case VERTEX_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,v_id);
 			vertex_data=handleBufferCreation(vertex_data,glvertices());
-			glBufferData_c(GL_ARRAY_BUFFER,vertex_data,mode);
+			glBufferData(GL_ARRAY_BUFFER,vertex_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		case TEXTURE_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,t_id);
 			texture_data=handleBufferCreation(texture_data,gltexcoords());
-			glBufferData_c(GL_ARRAY_BUFFER,texture_data,mode);
+			glBufferData(GL_ARRAY_BUFFER,texture_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		case COLOR_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,c_id);
 			color_data=handleBufferCreation(color_data,glcolors());
-			glBufferData_c(GL_ARRAY_BUFFER,color_data,mode);
+			glBufferData(GL_ARRAY_BUFFER,color_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		case NORMAL_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,n_id);
 			normal_data=handleBufferCreation(normal_data,glnormals());
-			glBufferData_c(GL_ARRAY_BUFFER,normal_data,mode);
+			glBufferData(GL_ARRAY_BUFFER,normal_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		case MATERIAL_DATA:
 			glBindBuffer(GL_ARRAY_BUFFER,m_id);
 			material_data=handleBufferCreation(material_data,glmatdata());
-			glBufferData_c(GL_ARRAY_BUFFER,material_data,mode);
+			glBufferData(GL_ARRAY_BUFFER,material_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		case TANGENT_DATA:
-			float[][] tbi=tangentBitangent();
+			Vector3f[][] tbi=tangentBitangent();
 			glBindBuffer(GL_ARRAY_BUFFER,tan_id);
-			tangent_data=handleBufferCreation(tangent_data,tbi[0]);
-			glBufferData_c(GL_ARRAY_BUFFER,tangent_data,mode);
+			tangent_data=handleBufferCreation(tangent_data,GObject.toFloats(tbi[0]));
+			glBufferData(GL_ARRAY_BUFFER,tangent_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,bit_id);
-			bitangent_data=handleBufferCreation(bitangent_data,tbi[1]);
-			glBufferData_c(GL_ARRAY_BUFFER,bitangent_data,mode);
+			bitangent_data=handleBufferCreation(bitangent_data,GObject.toFloats(tbi[1]));
+			glBufferData(GL_ARRAY_BUFFER,bitangent_data,mode);
 			glBindBuffer(GL_ARRAY_BUFFER,0);
 			break;
 		}
@@ -194,7 +178,6 @@ public class GObject extends Deletable {
 
 		tan_id=glGenBuffers();
 		bit_id=glGenBuffers();
-		adrt();
 	}
 	/**
 	 * If a segment from a to b hits this GObject transformed by transform tr.
@@ -256,27 +239,21 @@ public class GObject extends Deletable {
 		}
 		return minDistance;
 	}
-	private void clearVBOs() {
-		glDeleteBuffers(v_id);
-		glDeleteBuffers(c_id);
-		glDeleteBuffers(t_id);
-		glDeleteBuffers(n_id);
-		
-		glDeleteBuffers(m_id);
-		glDeleteBuffers(tan_id);
-		glDeleteBuffers(bit_id);
+	private IntBuffer bufferDel=BufferUtils.createIntBuffer(7);
+	public void clearVBOs() {
+		glDeleteBuffers(LeptonUtil.asIntBuffer(new int[] {v_id, t_id, c_id, n_id, m_id, tan_id, bit_id},bufferDel));
 	}
 	/**
 	 * Copy all the needed data GPU-side.
 	 */
 	public void refresh() {
-		this.copyData(VERTEX_DATA,GL_STATIC_DRAW);
-		this.copyData(NORMAL_DATA,GL_STATIC_DRAW);
-		if(texAV()) {this.copyData(TEXTURE_DATA,GL_STATIC_DRAW);}
-		this.copyData(COLOR_DATA,GL_STATIC_DRAW);
-		this.copyData(MATERIAL_DATA,GL_STATIC_DRAW);
+		this.copyData(VERTEX_DATA,GL_DYNAMIC_DRAW);
+		this.copyData(NORMAL_DATA,GL_DYNAMIC_DRAW);
+		if(texAV()) {this.copyData(TEXTURE_DATA,GL_DYNAMIC_DRAW);}
+		this.copyData(COLOR_DATA,GL_DYNAMIC_DRAW);
+		this.copyData(MATERIAL_DATA,GL_DYNAMIC_DRAW);
 		if(tbreq()) {
-			this.copyData(TANGENT_DATA,GL_STATIC_DRAW);
+			this.copyData(TANGENT_DATA,GL_DYNAMIC_DRAW);
 		}
 	}
 	private float[] toFloatArray(Matrix3f m,float[] put) {
@@ -339,8 +316,25 @@ public class GObject extends Deletable {
 	}
 
 	public int getNumTris() {
-		return (zombie)?zombieSize:tris.size();
+		return tris.size();
 	}
+	//	public static final int RTXVertexSize=16;
+	//	public FloatBuffer RTXAddVertexData(FloatBuffer in, int modelMatrixID) {
+	//		for(int i=0;i<tris.size();i++) {
+	//			Tri t=tris.get(i);
+	//			Vector3f v0=vmap.vertices.get(t.vertices[0]);
+	//			Vector3f v1=vmap.vertices.get(t.vertices[1]);
+	//			Vector3f v2=vmap.vertices.get(t.vertices[2]);
+	//			in.put(v0.x); in.put(v0.y); in.put(v0.z); in.put(2);
+	//			in.put(v1.x); in.put(v1.y); in.put(v1.z); in.put(2);
+	//			in.put(v2.x); in.put(v2.y); in.put(v2.z); in.put(modelMatrixID);
+	//			in.put(modelMatrixID);
+	//			in.put(1);
+	//			in.put(1);
+	//			in.put(1);
+	//		}
+	//		return in;
+	//	}
 	/**
 	 * tex Used and Loaded
 	 */
@@ -355,13 +349,13 @@ public class GObject extends Deletable {
 	 */
 	private void optionallyInstancedDrawArrays() {
 		if(instances<1) {
-			glDrawArrays(GL_TRIANGLES,0,getNumTris()*3);
+			glDrawArrays(GL_TRIANGLES,0,tris.size()*3);
 		} else {
-			glDrawArraysInstanced(GL_TRIANGLES,0,getNumTris()*3,instances);
+			glDrawArraysInstanced(GL_TRIANGLES,0,tris.size()*3,instances);
 		}
 	}
 	/**
-	 * Draw the triangles with no setup whatsoever. Don't use unless you're doing something awesome.
+	 * Draw the triangles with no setup whatsoever. Don't use.
 	 */
 	public void render_raw() {
 		if(!useCulling) {glDisable(GL_CULL_FACE);}
@@ -418,12 +412,12 @@ public class GObject extends Deletable {
 		if(t0.color[0]==r && t0.color[1]==g && t0.color[2]==b) {
 			return;
 		}
-		for(int i=0;i<getNumTris();i++) {
+		for(int i=0;i<tris.size();i++) {
 			tris.get(i).setColor(r, g, b);
 		}
 	}
 	public void setMaterial(float spec, float rough, float mat2, float mat3) {
-		for(int i=0;i<getNumTris();i++) {
+		for(int i=0;i<tris.size();i++) {
 			tris.get(i).setMaterial(spec,rough,mat2,mat3);
 		}
 	}
@@ -432,7 +426,7 @@ public class GObject extends Deletable {
 		if(t0.color[0]==r && t0.color[1]==g && t0.color[2]==b && t0.color[3]==a) {
 			return;
 		}
-		for(int i=0;i<getNumTris();i++) {
+		for(int i=0;i<tris.size();i++) {
 			tris.get(i).setColor(r, g, b);
 			tris.get(i).setAlpha(a);
 		}
@@ -453,63 +447,60 @@ public class GObject extends Deletable {
 	//		}
 	//		return this;
 	//	}
-	private boolean glverticesGenerated=false;
+	private float[] glvertices_last;
 	private float[] glvertices() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(glverticesGenerated && trisLocked) {
-			return null;
+		if(glvertices_last!=null && trisLocked) {
+			return glvertices_last;
 		}
-		float[] glvertices=new float[getNumTris()*3*3];
-		for(int i=0;i<getNumTris();i++) {
+		glvertices_last=new float[tris.size()*3*3];
+		for(int i=0;i<tris.size();i++) {
 			Vector3f vertex1=vmap.vertices.get(tris.get(i).vertices[0]);
 			Vector3f vertex2=vmap.vertices.get(tris.get(i).vertices[1]);
 			Vector3f vertex3=vmap.vertices.get(tris.get(i).vertices[2]);
-			glvertices[i*3*3+0]=vertex1.x;
-			glvertices[i*3*3+1]=vertex1.y;
-			glvertices[i*3*3+2]=vertex1.z;
+			glvertices_last[i*3*3+0]=vertex1.x;
+			glvertices_last[i*3*3+1]=vertex1.y;
+			glvertices_last[i*3*3+2]=vertex1.z;
 
-			glvertices[i*3*3+3]=vertex2.x;
-			glvertices[i*3*3+4]=vertex2.y;
-			glvertices[i*3*3+5]=vertex2.z;
+			glvertices_last[i*3*3+3]=vertex2.x;
+			glvertices_last[i*3*3+4]=vertex2.y;
+			glvertices_last[i*3*3+5]=vertex2.z;
 
-			glvertices[i*3*3+6]=vertex3.x;
-			glvertices[i*3*3+7]=vertex3.y;
-			glvertices[i*3*3+8]=vertex3.z;
+			glvertices_last[i*3*3+6]=vertex3.x;
+			glvertices_last[i*3*3+7]=vertex3.y;
+			glvertices_last[i*3*3+8]=vertex3.z;
 		}
-		return glvertices;
+		return glvertices_last;
 	}
-	public boolean glnormalsGenerated=false;
+	private float[] glnormals_last;
 	private float[] glnormals() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(glnormalsGenerated && trisLocked) {
-			return null;
+		if(glnormals_last!=null && trisLocked) {
+			return glnormals_last;
 		}
-		float[] glnormals=new float[getNumTris()*3*3];
-		for(int i=0;i<getNumTris();i++) {
+		glnormals_last=new float[tris.size()*3*3];
+		for(int i=0;i<tris.size();i++) {
 			Vector3f vertex1=vmap.normals.get(tris.get(i).normals[0]);
 			Vector3f vertex2=vmap.normals.get(tris.get(i).normals[1]);
 			Vector3f vertex3=vmap.normals.get(tris.get(i).normals[2]);
-			glnormals[i*3*3+0]=vertex1.x;
-			glnormals[i*3*3+1]=vertex1.y;
-			glnormals[i*3*3+2]=vertex1.z;
+			glnormals_last[i*3*3+0]=vertex1.x;
+			glnormals_last[i*3*3+1]=vertex1.y;
+			glnormals_last[i*3*3+2]=vertex1.z;
 
-			glnormals[i*3*3+3]=vertex2.x;
-			glnormals[i*3*3+4]=vertex2.y;
-			glnormals[i*3*3+5]=vertex2.z;
+			glnormals_last[i*3*3+3]=vertex2.x;
+			glnormals_last[i*3*3+4]=vertex2.y;
+			glnormals_last[i*3*3+5]=vertex2.z;
 
-			glnormals[i*3*3+6]=vertex3.x;
-			glnormals[i*3*3+7]=vertex3.y;
-			glnormals[i*3*3+8]=vertex3.z;
+			glnormals_last[i*3*3+6]=vertex3.x;
+			glnormals_last[i*3*3+7]=vertex3.y;
+			glnormals_last[i*3*3+8]=vertex3.z;
 		}
-		return glnormals;
+		return glnormals_last;
 	}
 	private float[] glcolors_last;
 	private float[] glcolors() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(glcolors_last==null || getNumTris()*3*4!=glcolors_last.length) {
-			glcolors_last=new float[getNumTris()*3*4];
+		if(glcolors_last==null || !trisLocked) {
+			glcolors_last=new float[tris.size()*3*4];
 		}
-		for(int i=0;i<getNumTris();i++) {
+		for(int i=0;i<tris.size();i++) {
 			PoolElement<Vector4f> vertex1_pe=DefaultVecmathPools.vector4f.alloc();
 			vertex1_pe.o().set(tris.get(i).color[0],tris.get(i).color[1],tris.get(i).color[2],tris.get(i).color[3]);
 			Vector4f vertex1=vertex1_pe.o();
@@ -533,11 +524,10 @@ public class GObject extends Deletable {
 	}
 	private float[] glmatdata_last;
 	private float[] glmatdata() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(glmatdata_last==null || getNumTris()*3*4!=glmatdata_last.length) {
-			glmatdata_last=new float[getNumTris()*3*4];
+		if(glmatdata_last==null || !trisLocked) {
+			glmatdata_last=new float[tris.size()*3*4];
 		}
-		for(int i=0;i<getNumTris();i++) {
+		for(int i=0;i<tris.size();i++) {
 			PoolElement<Vector4f> vertex1_pe=DefaultVecmathPools.vector4f.alloc();
 			vertex1_pe.o().set(tris.get(i).material[0],tris.get(i).material[1],tris.get(i).material[2],tris.get(i).material[3]);
 			Vector4f vertex1=vertex1_pe.o();
@@ -559,39 +549,44 @@ public class GObject extends Deletable {
 		}
 		return glmatdata_last;
 	}
-	private boolean gltexcoordsGenerated=false;
+	private float[] gltexcoords_last;
 	private float[] gltexcoords() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(gltexcoordsGenerated && trisLocked) {
-			return null;
+		if(gltexcoords_last!=null && trisLocked) {
+			return gltexcoords_last;
 		}
-		float[] gltexcoords=new float[getNumTris()*3*2];
-		for(int i=0;i<getNumTris();i++) {
+		gltexcoords_last=new float[tris.size()*3*2];
+		for(int i=0;i<tris.size();i++) {
 			Vector2f vertex1=vmap.texcoords.get(tris.get(i).texcoords[0]);
 			Vector2f vertex2=vmap.texcoords.get(tris.get(i).texcoords[1]);
 			Vector2f vertex3=vmap.texcoords.get(tris.get(i).texcoords[2]);
-			gltexcoords[i*3*2+0]=vertex1.x;
-			gltexcoords[i*3*2+1]=1-vertex1.y;
+			gltexcoords_last[i*3*2+0]=vertex1.x;
+			gltexcoords_last[i*3*2+1]=1-vertex1.y;
 
-			gltexcoords[i*3*2+2]=vertex2.x;
-			gltexcoords[i*3*2+3]=1-vertex2.y;
+			gltexcoords_last[i*3*2+2]=vertex2.x;
+			gltexcoords_last[i*3*2+3]=1-vertex2.y;
 
-			gltexcoords[i*3*2+4]=vertex3.x;
-			gltexcoords[i*3*2+5]=1-vertex3.y;
+			gltexcoords_last[i*3*2+4]=vertex3.x;
+			gltexcoords_last[i*3*2+5]=1-vertex3.y;
 		}
-		return gltexcoords;
+		return gltexcoords_last;
 	}
-	private boolean tangentBitangentGenerated=false;
-	private float[][] tangentBitangent() {
-		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
-		if(tangentBitangentGenerated && trisLocked) {
-			return null;
+	private static float[] toFloats(Vector3f[] vs) {
+		float[] ret=new float[vs.length*3];
+		for(int i=0;i<vs.length;i++) {
+			ret[3*i+0]=vs[i].x;
+			ret[3*i+1]=vs[i].y;
+			ret[3*i+2]=vs[i].z;
 		}
-		Vector3f[] tangents=new Vector3f[getNumTris()*3];
-		Vector3f[] bitangents=new Vector3f[getNumTris()*3];
-		float[] tan_floats=new float[getNumTris()*3*3];
-		float[] bit_floats=new float[getNumTris()*3*3];
-		for(int i=0;i<getNumTris();i++) {
+		return ret;
+	}
+	private Vector3f[][] tangentBitangent_last;
+	private Vector3f[][] tangentBitangent() {
+		if(tangentBitangent_last!=null && trisLocked) {
+			return tangentBitangent_last;
+		}
+		Vector3f[] tangents=new Vector3f[tris.size()*3];
+		Vector3f[] bitangents=new Vector3f[tris.size()*3];
+		for(int i=0;i<tris.size();i++) {
 			Vector3f v0=vmap.vertices.get(tris.get(i).vertices[0]);
 			Vector3f v1=vmap.vertices.get(tris.get(i).vertices[1]);
 			Vector3f v2=vmap.vertices.get(tris.get(i).vertices[2]);
@@ -628,17 +623,8 @@ public class GObject extends Deletable {
 			bitangents[i*3+1]=bitangent;
 			bitangents[i*3+2]=bitangent;
 		}
-		for(int i=0;i<getNumTris()*3;i++) {
-			tan_floats[i*3+0]=tangents[i].x;
-			tan_floats[i*3+1]=tangents[i].y;
-			tan_floats[i*3+2]=tangents[i].z;
-		}
-		for(int i=0;i<getNumTris()*3;i++) {
-			bit_floats[i*3+0]=bitangents[i].x;
-			bit_floats[i*3+1]=bitangents[i].y;
-			bit_floats[i*3+2]=bitangents[i].z;
-		}
-		float[][] ret=new float[][] {tan_floats,bit_floats};
+		Vector3f[][] ret=new Vector3f[][] {tangents,bitangents};
+		tangentBitangent_last=ret;
 		return ret;
 	}
 	/**

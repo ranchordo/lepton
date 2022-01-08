@@ -14,13 +14,8 @@ layout (std140) buffer info_buffer {
 	Info infos[];
 };
 
-<<<<<<< Updated upstream
 in vec2 texcoords;
 in float instanceID;
-=======
-varying vec2 texcoords;
-varying float instanceID;
->>>>>>> Stashed changes
 
 void main() {
 	Info info=infos[int(instanceID)];

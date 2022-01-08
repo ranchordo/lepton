@@ -28,7 +28,7 @@ public class Texture {
 	 */
 	public static String[] tex_names=new String[] {"albedo","normal","metallic","roughness","AO"};
 	/**
-	 * Is Tan/Bitan data required for each corresponding texture? (default 0,1,0,0,0 [Index 1 is for normal maps, that's why we need tan/bitan]). Change if you're redoing PBR or adding other texture types.
+	 * Is Tan/Bitan data required for each corresponding texture? (default 0,1,0,0,0 [Index 1 is for normal maps, that's why we need tan/bitan])
 	 */
 	public static boolean[] TB_REQUIRED=new boolean[] {false,true ,false,false,false};
 	
@@ -61,15 +61,6 @@ public class Texture {
 			loaded[i]=false;
 		}
 	}
-	public Texture(TextureImage img, int b) {
-		for(int i=0;i<NUM_TEXTURES;i++) {
-			if(i==b) {continue;}
-			texImages[i]=new TextureImage(i);
-			loaded[i]=false;
-		}
-		this.loaded[b]=true;
-		this.texImages[b]=img;
-	}
 	@Override public int hashCode() {
 		int ret=0;
 		for(int i=0;i<NUM_TEXTURES;i++) {
@@ -79,8 +70,8 @@ public class Texture {
 		}
 		return ret;
 	}
-	/*
-	 * Get a component TextureImage.
+	/**
+	 * Options are COLOR, BUMP, NORMAL. returns OpenGL-style int pointers to the texture buffers.
 	 */
 	public TextureImage get(int id) {
 		return texImages[id];
@@ -100,7 +91,7 @@ public class Texture {
 		loaded[id]=true;
 		Logger.log(0,"Found "+tex_names[id]+" texture "+fname+".");
 	}
-	public void deleteChildren() {
+	public void delete() {
 		for(int i=0;i<NUM_TEXTURES;i++) {
 			texImages[i].delete();
 		}

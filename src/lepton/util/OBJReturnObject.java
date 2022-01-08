@@ -1,4 +1,4 @@
-package lepton.engine.util;
+package lepton.util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

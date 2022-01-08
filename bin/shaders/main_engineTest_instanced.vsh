@@ -17,7 +17,6 @@ uniform mat4 world2view=mat4(1.0);
 uniform mat4 proj_matrix=mat4(1.0);
 uniform float useLighting=2;
 
-<<<<<<< Updated upstream
 in vec3 glv;
 in vec3 gln;
 in vec4 glc;
@@ -35,25 +34,6 @@ out vec3 normal_orig;
 out mat3 TBN;
 out vec4 material_v;
 out vec3 campos;
-=======
-attribute vec3 glv;
-attribute vec3 gln;
-attribute vec4 glc;
-attribute vec2 mtc0;
-attribute vec3 tangent;
-attribute vec3 bitangent;
-attribute vec4 material;
-
-varying vec4 intensity;
-varying vec2 texCoords;
-varying vec4 col;
-varying vec3 world_position;
-varying vec3 view_position;
-varying vec3 normal_orig;
-varying mat3 TBN;
-varying vec4 material_v;
-varying vec3 campos;
->>>>>>> Stashed changes
 void main() {
 	Info info=infos[gl_InstanceID];
 	mat4 master_matrix=info.obj2world;

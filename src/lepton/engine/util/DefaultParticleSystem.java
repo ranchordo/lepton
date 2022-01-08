@@ -22,28 +22,15 @@ public class DefaultParticleSystem {
 	private ComputeShader cpsh;
 	private Shader renderingShader;
 	private Vector3f origin=new Vector3f(0,0,0);
-	private Vector3f vi=new Vector3f(0,0,0);
 	private int n;
 	private int r;
 	private GObject geo;
 	private int power=1;
-	public Vector3f getOrigin() {
-		return origin;
-	}
-	public Vector3f getVi() {
-		return vi;
-	}
 	public void setOrigin(Vector3f o) {
 		origin.set(o);
 	}
 	public void setOrigin(float x, float y, float z) {
 		origin.set(x,y,z);
-	}
-	public void setVi(Vector3f o) {
-		vi.set(o);
-	}
-	public void setVi(float x, float y, float z) {
-		vi.set(x,y,z);
 	}
 	public DefaultParticleSystem(String computeShaderName, String renderShaderName, String bufferName, int maxNumParticles, int particlesPerSecond, int floatsPerParticle) {
 		cpsh=GLContextInitializer.cpshLoader.load(computeShaderName);
@@ -62,18 +49,16 @@ public class DefaultParticleSystem {
 		geo.instances=(int)Math.pow(n,power);
 	}
 	public DefaultParticleSystem(int maxNumParticles, int particlesPerSecond) {
-		this("particleDefault","specific/particleDefaultRender","particles_buffer",maxNumParticles,particlesPerSecond,8);
+		this("particleDefault","specific/particleDefaultRender","particles_buffer",maxNumParticles,particlesPerSecond,4);
 	}
 	private long micros=0;
 	private int pparticles=0;
 	private Transform mmc=new Transform();
 	private float[] mma=new float[16];
 	private FloatBuffer fm=BufferUtils.createFloatBuffer(16);
-	private long pmicros=0;
 	public void render() {
 		if(micros==0) {
 			micros=LeptonUtil.micros();
-			pmicros=micros;
 			return;
 		}
 		float t=(float)((double)(LeptonUtil.micros()-micros)/1000000.0); //Seconds
@@ -83,10 +68,6 @@ public class DefaultParticleSystem {
 		cpsh.setUniform1i("stindex",pparticles%((int)Math.pow(n,power)));
 		cpsh.setUniform1f("time",t);
 		cpsh.setUniform3f("origin",origin);
-		cpsh.setUniform3f("Vi",vi);
-		float dt=(float)((double)(LeptonUtil.micros()-pmicros)/1000000.0);
-		cpsh.setUniform1f("dt",dt);
-		pmicros=LeptonUtil.micros();
 		cpsh.applyAllSSBOs();
 		switch(power) {
 		case 1:

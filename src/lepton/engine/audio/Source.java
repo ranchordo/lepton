@@ -4,12 +4,10 @@ import static org.lwjgl.openal.AL10.*;
 
 import javax.vecmath.Vector3f;
 
-import lepton.engine.util.Deletable;
-
 /**
  * Pretty self-explanatory.
  */
-public class Source extends Deletable {
+public class Source {
 	public int sourceId;
 	public boolean playing=false;
 	private Vector3f pos=new Vector3f(0,0,0);
@@ -28,7 +26,6 @@ public class Source extends Deletable {
 		alSource3f(sourceId,AL_POSITION,pos.x,pos.y,pos.z);
 		alSource3f(sourceId,AL_VELOCITY,vel.x,vel.y,vel.z);
 		alSourceStop(sourceId);
-		adrt();
 	}
 	public void updatePosVel() {
 		alSource3f(sourceId,AL_POSITION,pos.x,pos.y,pos.z);
@@ -50,7 +47,7 @@ public class Source extends Deletable {
 	}
 	public void play(Sound buffer) {
 		if(activeSound!=null) {
-			activeSound.delete();
+			activeSound.free();
 			activeSound=null;
 		}
 		activeSound=buffer;
@@ -60,21 +57,20 @@ public class Source extends Deletable {
 	}
 	public void stop() {
 		if(activeSound!=null) {
-			activeSound.delete();
+			activeSound.free();
 			activeSound=null;
 		}
 		alSourceStop(sourceId);
 	}
 
-	public void delete() {
+	public void close() {
 		stop();
 		alDeleteSources(sourceId);
-		rdrt();
 	}
 	public boolean isPlaying() {
 		boolean ret=alGetSourcei(sourceId, AL_SOURCE_STATE) == AL_PLAYING;
 		if(!ret && activeSound!=null) {
-			activeSound.delete();
+			activeSound.free();
 			activeSound=null;
 		}
 		return ret;

@@ -4,30 +4,32 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import org.lwjgl.opengl.GL43;
-
 import lepton.cpshlib.SSBO;
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.util.advancedLogger.Logger;
 
 public class InstanceAccumulator {
-	public static boolean suppressOversizeWarnings=false;
 	public int objectSize;
-//	private FloatBuffer buffer;
-	private int position=0;
-	private int capacity=0;
+	private FloatBuffer buffer;
 	private SSBO ssbo;
 	private ShaderDataCompatible shader;
+	private boolean dataChanged=false;
 	public static final byte NO_MERGE=0;
 	public static final byte ID_MERGE=1;
 	public static final byte FULL_MERGE=2;
+	public static boolean runAggressiveChangeCheckDefault=false;
 	/**
 	 * 0: no merge. 1: id merge. 2: full object+buffer merge.
 	 */
 	public static byte mergeSSBOsOnDuplicate=NO_MERGE;
+	public boolean runAggressiveChangeCheck=false;
+	public boolean hasDataChanged() {
+		return dataChanged;
+	}
 	public InstanceAccumulator(ShaderDataCompatible shader, int objectSize, String name) {
 		this.shader=shader;
 		this.objectSize=objectSize;
+		this.buffer=BufferUtils.createFloatBuffer(0);
 		SSBO s=shader.getSSBOMappings().get(name);
 		if(s==null || mergeSSBOsOnDuplicate!=FULL_MERGE) {
 			ssbo=shader.generateNewSSBO(name,0);
@@ -38,48 +40,64 @@ public class InstanceAccumulator {
 		} else {
 			ssbo=s;
 		}
+		runAggressiveChangeCheck=runAggressiveChangeCheckDefault;
+	}
+	public FloatBuffer getBuffer() {
+		return buffer;
 	}
 	public SSBO getSSBO() {
 		return ssbo;
-	}
-	public int getPosition() {
-		return position;
-	}
-	public int getCapacity() {
-		return capacity;
 	}
 	public ShaderDataCompatible getShader() {
 		return shader;
 	}
 	public void reset() {
-		position=0;
-	}
-	private void reallocateTo(int sizeFloats) {
-		if(sizeFloats>capacity) {
-			if(true) {//sizeFloats>1048576 && !suppressOversizeWarnings) {
-				Logger.log(2,"Allocating a new buffer with size "+sizeFloats+" for instanceaccumulator with shader "+shader.getInitialFname()+". Possible oversized buffer. Set suppressOversizeWarnings to disable this check.");
-			}
-			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(capacity);
-			GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
-			GL43.glGetBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,0,newbuffer);
-			GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER,sizeFloats*4,GL43.GL_STATIC_DRAW);
-			GL43.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,0,newbuffer);
-			GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,0);
-			capacity=sizeFloats;
-		}
+		buffer.position(0);
+		dataChanged=false;
 	}
 	public void add(float[] data) {
 		if(data.length!=objectSize) {
 			Logger.log(4,"Incorrect size of "+data.length+" in instace accumulator. Correct object size (floats) is "+objectSize+".");
 		}
-		reallocateTo(data.length+position);
-		GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
-		GL43.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,position*4,data);
-		GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,0);
-		position+=objectSize;
+		if((buffer.position()+data.length>buffer.capacity()) || buffer==null) {
+			//We need to reallocate
+			if(buffer.capacity()>1048576) {
+				Logger.log(0,"We may have an oversized buffer. Reallocating with new size "+(buffer.position()+data.length));
+			}
+			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(buffer.position()+data.length);
+			shader.initSSBOData(newbuffer.capacity()*4,ssbo);
+			newbuffer.position(0);
+			for(int i=0;i<buffer.position();i++) {
+				newbuffer.put(buffer.get(i));
+			}
+			buffer=newbuffer;
+		}
+		for(int i=0;i<data.length;i++) {
+			if(runAggressiveChangeCheck) { dataChanged=dataChanged || (buffer.get(buffer.position())!=data[i]); }
+			buffer.put(data[i]);
+		}
+		dataChanged=dataChanged || !runAggressiveChangeCheck;
 	}
 	public void reserveObject() {
-		reallocateTo(objectSize+position);
-		position+=objectSize;
+		if((buffer.position()+objectSize>buffer.capacity()) || buffer==null) {
+			//We need to reallocate
+			if(buffer.capacity()>1048576) {
+				Logger.log(0,"We may have an oversized buffer. Reallocating with new size "+(buffer.position()+objectSize));
+			}
+			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(buffer.position()+objectSize);
+			shader.initSSBOData(newbuffer.capacity()*4,ssbo);
+			newbuffer.position(0);
+			for(int i=0;i<buffer.position();i++) {
+				newbuffer.put(buffer.get(i));
+			}
+			buffer=newbuffer;
+			dataChanged=true;
+		}
+		buffer.position(buffer.position()+objectSize);
+	}
+	public void submit() {
+		if(hasDataChanged()) {
+			ShaderDataCompatible.updateSSBOData(buffer,ssbo);
+		}
 	}
 }

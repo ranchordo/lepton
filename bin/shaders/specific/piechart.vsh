@@ -12,19 +12,11 @@ layout (std140) buffer info_buffer {
 };
 
 
-<<<<<<< Updated upstream
 in vec3 glv;
 in vec2 mtc0;
 
 out vec2 texcoords;
 out float instanceID;
-=======
-attribute vec3 glv;
-attribute vec2 mtc0;
-
-varying vec2 texcoords;
-varying float instanceID;
->>>>>>> Stashed changes
 uniform mat4 proj_matrix;
 
 

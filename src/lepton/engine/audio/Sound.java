@@ -1,25 +1,32 @@
 package lepton.engine.audio;
 
-import static org.lwjgl.openal.AL10.alDeleteBuffers;
+import java.nio.IntBuffer;
 
-import lepton.engine.util.Deletable;
+import org.lwjgl.BufferUtils;
+
+import lepton.util.LeptonUtil;
+
+import static org.lwjgl.openal.AL10.*;
 
 /**
  * Wrapper for sample buffer.
  */
-public class Sound extends Deletable {
+public class Sound {
 	private Integer bufferId;
-	public Sound() {adrt();}
-	public Sound(String fname) {getFile(fname); adrt();}
+	public Sound() {}
+	public Sound(String fname) {getFile(fname);}
 	public int buffer() {return bufferId;}
+	private IntBuffer delbuf=BufferUtils.createIntBuffer(1);
+	private int[] delbuf_arr=new int[1];
 	public void getFile(String fname) {
 		if(bufferId!=null) {
-			delete();
+			free();
 		}
 		bufferId=Audio.getOGG(fname);
 	}
-	public void delete() {
-		alDeleteBuffers(bufferId);
-		rdrt();
+	public void free() {
+		delbuf_arr[0]=bufferId;
+		LeptonUtil.asIntBuffer(delbuf_arr,delbuf);
+		alDeleteBuffers(delbuf);
 	}
 }

@@ -7,14 +7,13 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-import lepton.engine.util.Deletable;
 import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
  * Can contain multiple color buffers, but can only contain one depth and stencil buffer. 
  */
-public class FrameBuffer extends Deletable {
+public class FrameBuffer {
 	public static final int FRAMEBUFFER=0, RENDERBUFFER=1, TEXTUREBUFFER=2;
 	private int fbo;
 	private int[] tbo;
@@ -118,13 +117,14 @@ public class FrameBuffer extends Deletable {
 //		
 //		glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH,0,GL_DEPTH_STENCIL,GL_UNSIGNED_INT_24_8,(FloatBuffer)null);
 		
-		if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE) {
+		if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE) {
+			Logger.log(0,"Framebuffer initialized successfully.");
+		} else {
 			Logger.log(4,"Framebuffer initiation did not result in a FRAMEBUFFER_COMPLETE flag.");
 		}
 		glBindTexture(texParam,0);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glBindRenderbuffer(GL_RENDERBUFFER,0);
-		adrt();
 	}
 	/**
 	 * Clean up this framebuffer from memory.
@@ -133,7 +133,6 @@ public class FrameBuffer extends Deletable {
 		glDeleteFramebuffers(fbo);
 		glDeleteTextures(tbo);
 		glDeleteRenderbuffers(rbo);
-		rdrt();
 	}
 	/**
 	 * Bind tbos[id] to a texture.

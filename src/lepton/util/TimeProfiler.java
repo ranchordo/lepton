@@ -38,14 +38,4 @@ public class TimeProfiler {
 			times[i]=times_pr[i];
 		}
 	}
-	@Override public String toString() {
-		StringBuilder sb=new StringBuilder();
-		for(int i=0;i<times.length;i++) {
-			sb.append(time_names[i]);
-			sb.append(": ");
-			sb.append(times[i]);
-			sb.append("us, ");
-		}
-		return sb.toString();
-	}
 }
