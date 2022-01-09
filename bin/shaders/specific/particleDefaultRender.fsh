@@ -1,11 +1,6 @@
 #version 430 core
-#define FALLOFF 0.1
+#define FALLOFF 0.01
 layout (location = 0) out vec4 FragColor;
-
-in vec2 texcoords;
-in int instanceID;
-uniform int num_lights;
-in vec4 world_position;
 
 struct Light {
 	float type;
@@ -16,6 +11,12 @@ struct Light {
 layout (std140) buffer lights_buffer {
 	Light lights_arr[];
 };
+
+in vec2 texcoords;
+in int instanceID;
+in vec4 world_position;
+
+uniform int num_lights;
 
 void main() {
 	vec4 intensity_in=vec4(0,0,0,0);

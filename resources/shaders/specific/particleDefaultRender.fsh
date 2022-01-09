@@ -14,6 +14,9 @@ layout (std140) buffer lights_buffer {
 
 in vec2 texcoords;
 in int instanceID;
+in vec4 world_position;
+
+uniform int num_lights;
 
 void main() {
 	vec4 intensity_in=vec4(0,0,0,0);

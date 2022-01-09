@@ -34,7 +34,6 @@ out vec3 normal_orig;
 out mat3 TBN;
 out vec4 material_v;
 out vec3 campos;
-
 void main() {
 	Info info=infos[gl_InstanceID];
 	mat4 master_matrix=info.obj2world;

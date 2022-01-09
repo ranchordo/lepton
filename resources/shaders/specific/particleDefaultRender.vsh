@@ -8,12 +8,12 @@ layout (std140) buffer particles_buffer {
 	Particle particles[];
 };
 
-
 in vec3 glv;
 in vec2 mtc0;
 
 out vec2 texcoords;
 out int instanceID;
+out vec4 world_position;
 uniform mat4 proj_matrix;
 uniform mat4 world2view;
 

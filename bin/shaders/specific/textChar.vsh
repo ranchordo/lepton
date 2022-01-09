@@ -10,6 +10,7 @@ layout (std140) buffer info_buffer {
 	Info infos[];
 };
 
+
 in vec3 glv;
 in vec2 mtc0;
 

@@ -157,11 +157,6 @@ public class EngineTest {
 			timeProfiler.start(0);
 			doCubeMovement(cube.geo.p,h);
 			timeProfiler.stop(0);
-			timeProfiler.start(4);
-			debugScreen.logic();
-			debugScreen.render();
-			//System.out.println(GLContextInitializer.fr);
-			timeProfiler.stop(4);
 			timeProfiler.start(1);
 			fbo.bind();
 			glClearColor(0,0,0,1);
@@ -171,7 +166,11 @@ public class EngineTest {
 			instancedRenderer.renderInstanced(renderRoutine);
 			cube.postrender();
 			timeProfiler.stop(1);
-			
+			timeProfiler.start(4);
+			debugScreen.logic();
+			debugScreen.render();
+			//System.out.println(GLContextInitializer.fr);
+			timeProfiler.stop(4);
 			timeProfiler.start(2);
 			fbo.unbind();
 			
