@@ -1,18 +1,16 @@
 package lepton.engine.graphics2d.tiles;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 import javax.vecmath.Vector4f;
 
 import lepton.engine.graphics2d.util.FontAtlas;
 import lepton.engine.graphics2d.util.Glyph;
-import lepton.engine.graphics2d.util.InstancedRenderConfig2d;
-import lepton.engine.graphics2d.util.InstancedRenderer2d;
-import lepton.engine.rendering.instanced.InstanceAccumulator;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Shader;
+import lepton.engine.rendering.Texture;
+import lepton.engine.rendering.instanced.InstanceAccumulator;
+import lepton.engine.rendering.instanced.InstancedRenderer;
 
 public class TextGroup extends Tile2d {
 	public static Shader textShader;
@@ -24,7 +22,7 @@ public class TextGroup extends Tile2d {
 	public float g;
 	public float b;
 	private InstanceAccumulator ia;
-	public TextGroup(String str, FontAtlas font, float x, float y, float height, float r, float g, float b, InstancedRenderer2d sl) {
+	public TextGroup(String str, FontAtlas font, float x, float y, float height, float r, float g, float b, InstancedRenderer sl) {
 		f=font;
 		s=str;
 		refreshString=true;
@@ -34,7 +32,7 @@ public class TextGroup extends Tile2d {
 		if(textShader==null) {
 			textShader=GLContextInitializer.shaderLoader.load("specific/textChar");
 		}
-		ia=sl.loadConfiguration(textShader,f.textureImage,Tile2d.genericSquare,12,"info_buffer").instanceAccumulator;
+		ia=sl.loadConfiguration(textShader,new Texture(f.textureImage,0),Tile2d.genericSquare,12,"info_buffer").instanceAccumulator;
 		this.r=r;
 		this.g=g;
 		this.b=b;

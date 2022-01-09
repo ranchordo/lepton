@@ -2,6 +2,10 @@ package lepton.engine.rendering;
 
 import static org.lwjgl.opengl.GL46.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map.Entry;
+
 import javax.vecmath.Matrix4f;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -12,9 +16,13 @@ import org.lwjgl.opengl.GL;
 import com.bulletphysics.linearmath.Transform;
 
 import lepton.cpshlib.CPSHLoader;
+import lepton.cpshlib.SSBO;
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.lighting.BloomHandler;
+import lepton.engine.rendering.lighting.Lighting;
+import lepton.engine.util.Deletable;
 import lepton.util.LeptonUtil;
+import lepton.util.advancedLogger.Logger;
 
 /**
  * Serves as a rendering and OpenGL general utility.
@@ -79,6 +87,15 @@ public class GLContextInitializer {
 			errorCount+=1;
 		}
 	}
+	public static void cleanAllRemainingGLData() {
+		Deletable.getDRT().deleteAll();
+		//Delete misc data
+		Lighting.delete();
+	}
+	public static void resetGlobalState() {
+		cleanAllRemainingGLData();
+		
+	}
 	private static void glPerspective(float fov, float aspect, float n, float f) {
 		Matrix4f res=new Matrix4f();
 		float tanHalfFovy = (float) Math.tan(Math.toRadians(fov) * 0.5);
@@ -109,23 +126,22 @@ public class GLContextInitializer {
 	}
 	public static void initializeGLContext(boolean showWindow, int w, int h, boolean fullscreen, String windowTitle) {
 		if(!glfwInit()) {
-			System.err.println("GLFWInit Error.");
-			System.exit(1);
+			Logger.log(4,"GLFW init error.");
 		}
 		GLFWVidMode d=glfwGetVideoMode(glfwGetPrimaryMonitor());
 		fullscreen&=showWindow; //DO NOT DELETE THIS WHATEVER YOU DO
 		if(fullscreen) {
 			winW=d.width();
 			winH=d.height();
-			win=glfwCreateWindow(showWindow?winW:1,showWindow?winH:1,showWindow?windowTitle:"ComputeShader window binding",glfwGetPrimaryMonitor(),0);
+			win=glfwCreateWindow(showWindow?winW:1,showWindow?winH:1,showWindow?windowTitle:"Lepton hidden window",glfwGetPrimaryMonitor(),0);
 		} else {
-			win=glfwCreateWindow(showWindow?w:1,showWindow?h:1,showWindow?windowTitle:"ComputeShader window binding",0,0);
+			win=glfwCreateWindow(showWindow?w:1,showWindow?h:1,showWindow?windowTitle:"Lepton hidden window",0,0);
 			winW=w;
 			winH=h;
 		}
 		aspectRatio=(float)winW/(float)winH;
 		if(win==0) {
-			lepton.util.advancedLogger.Logger.log(4,"win is 0, maybe there was an init error?");
+			Logger.log(4,"win is 0, maybe there was an init error?");
 		}
 		if(showWindow) {
 			glfwShowWindow(win);
@@ -134,7 +150,7 @@ public class GLContextInitializer {
 		}
 		glfwMakeContextCurrent(win);
 		GL.createCapabilities();
-		
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -153,7 +169,7 @@ public class GLContextInitializer {
 
 		setFOV(90);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-		
+		glViewport(0,0,winW,winH);
 		//Init handlers:
 		BloomHandler.init();
 	}

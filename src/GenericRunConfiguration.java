@@ -1,6 +1,7 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import lepton.engine.rendering.GLContextInitializer;
 import lepton.tests.CPSHLibSSBOTest;
 import lepton.tests.ObjPoolLibTest;
 import lepton.tests.TensorLibTest;
@@ -105,6 +106,7 @@ public class GenericRunConfiguration {
 				Class<?> runConfig=configs[commandIssued];
 				try {
 					Method mainMethod=runConfig.getDeclaredMethod("main",String[].class);
+					GLContextInitializer.resetGlobalState();
 					mainMethod.invoke(null, (Object)(new String[] {}));
 					Logger.log(Logger.no_prefix,"\n");
 					Logger.log(1,"Test completed.");
@@ -122,6 +124,6 @@ public class GenericRunConfiguration {
 		}
 		
 		cw.waitForClose();
-		System.exit(1);
+		System.exit(0);
 	}
 }

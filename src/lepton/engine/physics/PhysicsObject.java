@@ -16,7 +16,7 @@ import com.bulletphysics.linearmath.Transform;
 import lepton.engine.animation.Animator;
 import lepton.engine.rendering.GObject;
 import lepton.engine.rendering.VertexMap;
-import lepton.util.OBJReturnObject;
+import lepton.engine.util.OBJReturnObject;
 import lepton.util.advancedLogger.Logger;
 
 public class PhysicsObject {

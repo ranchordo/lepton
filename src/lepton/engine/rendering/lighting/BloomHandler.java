@@ -21,7 +21,7 @@ public class BloomHandler {
 	 */
 	public static void update() {
 		screen=new Screen();
-		blurShader=new Shader("specific/blur");
+		blurShader=GLContextInitializer.shaderLoader.load("specific/blur");
 		fbo2=new FrameBuffer(0);
 	}
 	public static void init() {

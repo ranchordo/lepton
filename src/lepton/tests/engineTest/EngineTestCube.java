@@ -21,7 +21,7 @@ import lepton.engine.physics.WorldObject;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.GObject;
 import lepton.engine.rendering.Tri;
-import lepton.engine.rendering.instanced.InstancedRenderConfig3d;
+import lepton.engine.rendering.instanced.InstancedRenderConfig;
 import lepton.engine.rendering.lighting.Light;
 import lepton.engine.rendering.lighting.Lighting;
 import lepton.engine.util.DefaultParticleSystem;
@@ -44,7 +44,7 @@ public class EngineTestCube {
 		this.shape=new Vector3f(side_len/2.0f,side_len/2.0f,side_len/2.0f);
 		this.origin=origin;
 		this.quat=quat;
-		this.particleSystem=new DefaultParticleSystem(2500,1500);
+		this.particleSystem=new DefaultParticleSystem(3000,200);
 		this.internalLight=new Light(Light.LIGHT_POSITION,0,0,0,5,0,5,1);
 	}
 	public void initPhysics() {
@@ -118,11 +118,12 @@ public class EngineTestCube {
 			pcollisions.add(collisions.get(i));
 		}
 		particleSystem.setOrigin(this.geo.p.getTransform().origin);
+		this.geo.p.body.getLinearVelocity(particleSystem.getVi());
 	}
 	public void initSoundtrack() {
 		soundtrack.put("Clank","engineTest-clank integrated");
 	}
-	private InstancedRenderConfig3d renderConfig;
+	private InstancedRenderConfig renderConfig;
 	public void initGeo() {
 		this.geo=new WorldObject();
 		this.geo.g=new GObject();
