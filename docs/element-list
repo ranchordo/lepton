@@ -17,5 +17,6 @@ lepton.tests
 lepton.tests.engineTest
 lepton.util
 lepton.util.advancedLogger
+lepton.util.advancedLogger.defaultHandlers
 lepton.util.cloneabletypes
 lepton.util.console
