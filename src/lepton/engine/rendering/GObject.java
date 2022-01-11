@@ -478,7 +478,7 @@ public class GObject extends Deletable {
 		}
 		return glvertices;
 	}
-	public boolean glnormalsGenerated=false;
+	private boolean glnormalsGenerated=false;
 	private float[] glnormals() {
 		if(zombie) {Logger.log(4,"Can't generate array data from a zombified object.");}
 		if(glnormalsGenerated && trisLocked) {
