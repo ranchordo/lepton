@@ -153,6 +153,7 @@ public class GLContextInitializer {
 		}
 		glfwMakeContextCurrent(win);
 		GL.createCapabilities();
+		Logger.log(0,"Initializing GL Context on device "+getGPUName()+"...");
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -175,7 +176,6 @@ public class GLContextInitializer {
 		glViewport(0,0,winW,winH);
 		//Init handlers:
 		BloomHandler.init();
-		Logger.log(0,"Initialized GL Context on device "+getGPUName());
 	}
 	public static void doCursor(long win, boolean grabbed, boolean hidden) {
 		if(!grabbed && !hidden) {glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}

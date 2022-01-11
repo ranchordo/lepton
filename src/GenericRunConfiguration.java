@@ -7,8 +7,8 @@ import lepton.tests.ObjPoolLibTest;
 import lepton.tests.TensorLibTest;
 import lepton.tests.engineTest.EngineTest;
 import lepton.util.CleanupTasks;
-import lepton.util.advancedLogger.ConsoleWindowHandler;
 import lepton.util.advancedLogger.Logger;
+import lepton.util.advancedLogger.defaultHandlers.ConsoleWindowHandler;
 import lepton.util.console.ConsoleWindow;
 
 /**

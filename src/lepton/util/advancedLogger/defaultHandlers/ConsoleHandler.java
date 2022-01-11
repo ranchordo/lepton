@@ -1,4 +1,7 @@
-package lepton.util.advancedLogger;
+package lepton.util.advancedLogger.defaultHandlers;
+
+import lepton.util.advancedLogger.LogEntry;
+import lepton.util.advancedLogger.LogHandler;
 
 /**
  * Part of the advanced logger. The advanced logger uses a system of handler classes. This one prints log entries to the console.
@@ -9,17 +12,7 @@ public class ConsoleHandler extends LogHandler {
 	@Override
 	public void handle(LogEntry entry) {
 		if(entry.level.botherPrinting) {
-			boolean isPrefixEmpty=entry.level.prefix.equals("");
-			if(!entry.level.inErrStream) {
-				System.out.println((isPrefixEmpty?"":"[")+entry.level.prefix+(isPrefixEmpty?"":"]: ")+entry.message);
-			} else {
-				System.err.println((isPrefixEmpty?"":"[")+entry.level.prefix+(isPrefixEmpty?"":"]: ")+entry.message);
-			}
+			(entry.level.inErrStream?System.err:System.out).println(LogHandler.getLogString(entry));
 		}
-	}
-
-	@Override
-	public byte getHandlerTypeID() {
-		return 0;
 	}
 }

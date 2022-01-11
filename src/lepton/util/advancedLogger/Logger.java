@@ -2,6 +2,8 @@ package lepton.util.advancedLogger;
 
 import java.util.ArrayList;
 
+import lepton.util.advancedLogger.defaultHandlers.ConsoleHandler;
+
 /***
  * Contains an array of LogLevels that are used to give different integer levels their meaning.
  */
@@ -25,7 +27,7 @@ public class Logger {
 	 * 3: ERROR (no exit)
 	 * 4: FATAL (system exit with code 1 on recv)
 	 */
-	public static final LogLevel[] levels=new LogLevel[] {
+	public static LogLevel[] levels=new LogLevel[] {
 			new LogLevel("DEBUG",true,false,false), //0
 			new LogLevel("INFO",true,false,false), //1
 			new LogLevel("WARN",true,false,false), //2
@@ -44,6 +46,11 @@ public class Logger {
 		handlers=new ArrayList<LogHandler>();
 		handlers.add(new ConsoleHandler());
 	}
+	public static void cleanuphandlers() {
+		for(LogHandler handler : Logger.handlers) {
+			handler.delete();
+		}
+	}
 	/**
 	 * Whether to log locally or not.
 	 */
@@ -52,11 +59,23 @@ public class Logger {
 		Logger.lfc=lfc;
 	}
 	public static void log(LogEntry entry) {
-		if(localLog) {local.add(entry);}
+		if(localLog && entry.level.keepLocalLog) {local.add(entry);}
 		for(LogHandler handler : handlers) {
 			handler.handle(entry);
 		}
 		entry.level.tryExit();
+	}
+	public static void simulateLocalLog(LogHandler handler) {
+		for(LogEntry e : local) {
+			handler.handle(e);
+		}
+	}
+	public static void simulateLocalLog() {
+		for(LogEntry e : local) {
+			for(LogHandler handler : handlers) {
+				handler.handle(e);
+			}
+		}
 	}
 	public static void log(int level, String message) {
 		log(new LogEntry(level,message));

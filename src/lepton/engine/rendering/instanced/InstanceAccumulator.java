@@ -56,7 +56,7 @@ public class InstanceAccumulator {
 	}
 	private void reallocateTo(int sizeFloats) {
 		if(sizeFloats>capacity) {
-			if(true) {//sizeFloats>1048576 && !suppressOversizeWarnings) {
+			if(sizeFloats>262144 && !suppressOversizeWarnings) {
 				Logger.log(2,"Allocating a new buffer with size "+sizeFloats+" for instanceaccumulator with shader "+shader.getInitialFname()+". Possible oversized buffer. Set suppressOversizeWarnings to disable this check.");
 			}
 			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(capacity);

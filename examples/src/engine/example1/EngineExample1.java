@@ -28,10 +28,10 @@ import lepton.optim.objpoollib.PoolStrainer;
 import lepton.util.CleanupTasks;
 import lepton.util.InputHandler;
 import lepton.util.LeptonUtil;
-import lepton.util.advancedLogger.ConsoleWindowHandler;
 import lepton.util.advancedLogger.LogHandler;
 import lepton.util.advancedLogger.LogLevel;
 import lepton.util.advancedLogger.Logger;
+import lepton.util.advancedLogger.defaultHandlers.ConsoleWindowHandler;
 import lepton.util.console.ConsoleWindow;
 
 public class EngineExample1 {

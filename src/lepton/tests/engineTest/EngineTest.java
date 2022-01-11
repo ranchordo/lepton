@@ -31,10 +31,11 @@ import lepton.optim.objpoollib.PoolStrainer;
 import lepton.util.CleanupTasks;
 import lepton.util.InputHandler;
 import lepton.util.LeptonUtil;
-import lepton.util.advancedLogger.ConsoleWindowHandler;
 import lepton.util.advancedLogger.LogHandler;
 import lepton.util.advancedLogger.LogLevel;
 import lepton.util.advancedLogger.Logger;
+import lepton.util.advancedLogger.defaultHandlers.ConsoleWindowHandler;
+import lepton.util.advancedLogger.defaultHandlers.FileHandler;
 import lepton.util.console.ConsoleWindow;
 
 public class EngineTest {
@@ -76,10 +77,16 @@ public class EngineTest {
 		}
 	};
 	private static EngineTestCube cube;
+	private static FileHandler fh;
+	private static void errorLog() {
+		Logger.simulateLocalLog(fh);
+	}
 	/**
 	 * Execute the main engine test.
 	 */
 	public static void Main() {
+//		Logger.levels[0].keepLocalLog=false; //We don't care about debug
+		Logger.localLog=true;
 		Logger.setCleanupTask(()->CleanupTasks.cleanUp());
 		CleanupTasks.add(()->GLContextInitializer.cleanAllRemainingGLData());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
@@ -93,6 +100,7 @@ public class EngineTest {
 		CleanupTasks.add(()->{if(LogLevel.isFatal()) {mainConsoleWindow.waitForClose();}}); //Wait for the console window to close if a fatal error lead to an exit
 		CleanupTasks.add(()->mainConsoleWindow.close());
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
+		CleanupTasks.add(()->{if(LogLevel.isFatal()) {errorLog();}});
 		
 		GLContextInitializer.initializeGLContext(true,1280,720,false,"Physics, graphics, sound, computation, and instanced and non-instanced 2d and 3d rendering");
 		
@@ -112,6 +120,7 @@ public class EngineTest {
 		
 		physics.EXPOSE_COLLISION_DATA=true;
 		InstanceAccumulator.mergeSSBOsOnDuplicate=InstanceAccumulator.NO_MERGE;
+		fh=new FileHandler(LeptonUtil.getExternalPath()+"/EngineTest");
 		
 		Audio.init();
 		
@@ -140,6 +149,7 @@ public class EngineTest {
 		EngineTestScreen debugScreen=new EngineTestScreen();
 		debugScreen.init();
 		glfwSwapInterval(0);
+		Logger.log(0,"Initialization done. Ready for main loop.");
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			timeProfiler.clear();
 			timeProfiler.start(5);

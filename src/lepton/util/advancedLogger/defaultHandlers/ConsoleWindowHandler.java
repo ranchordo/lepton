@@ -1,5 +1,7 @@
-package lepton.util.advancedLogger;
+package lepton.util.advancedLogger.defaultHandlers;
 
+import lepton.util.advancedLogger.LogEntry;
+import lepton.util.advancedLogger.LogHandler;
 import lepton.util.console.ConsoleWindow;
 
 public class ConsoleWindowHandler extends LogHandler {
@@ -10,13 +12,7 @@ public class ConsoleWindowHandler extends LogHandler {
 	@Override
 	public void handle(LogEntry entry) {
 		if(entry.level.botherPrinting && consoleWindow!=null && isUnique()) {
-			boolean isPrefixEmpty=entry.level.prefix.equals("");
-			consoleWindow.println((isPrefixEmpty?"":"[")+entry.level.prefix+(isPrefixEmpty?"":"]: ")+entry.message);
+			consoleWindow.println(LogHandler.getLogString(entry));
 		}
 	}
-	@Override
-	public byte getHandlerTypeID() {
-		return 1;
-	}
-
 }
