@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GL44;
 
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.GLContextInitializer;
@@ -59,7 +60,9 @@ public class Lighting {
 		refreshLightSize();
 	}
 	private static void refreshLightSize() {
-		ShaderDataCompatible.initSSBOData(Light.LIGHT_SIZE_FLOATS*lights.size()*4,firstSSBO);
+		GL43.glDeleteBuffers(firstSSBO);
+		firstSSBO=GL43.glGenBuffers();
+		ShaderDataCompatible.initSSBODataImmutable(Light.LIGHT_SIZE_FLOATS*lights.size()*4,firstSSBO,GL44.GL_DYNAMIC_STORAGE_BIT|GL44.GL_MAP_READ_BIT|GL44.GL_MAP_WRITE_BIT);
 	}
 	/**
 	 * Apply lighting data to a specific shader.
@@ -87,7 +90,21 @@ public class Lighting {
 	 */
 	public static void updateLight(Light light) {
 		if(!firstSSBOInitialized) {return;}
-		int index=light.lightID*Light.LIGHT_SIZE_FLOATS*4;
+		int index=light.lightID*Light.LIGHT_SIZE_FLOATS;
+		//FloatBuffer templight=ShaderDataCompatible.mappify(firstSSBO,GL43.GL_WRITE_ONLY);
+		//templight.position(index);
+//		templight.put((float)light.type);
+//		templight.put(0.0f);
+//		templight.put(0.0f);
+//		templight.put(0.0f);
+//		templight.put(light.prop.x);
+//		templight.put(light.prop.y);
+//		templight.put(light.prop.z);
+//		templight.put(0.0f);
+//		templight.put(light.intensity.x);
+//		templight.put(light.intensity.y);
+//		templight.put(light.intensity.z);
+//		templight.put(light.intensity.w);
 		templight[0]=(float)light.type;
 		templight[1]=0.0f;
 		templight[2]=0.0f;
@@ -101,8 +118,9 @@ public class Lighting {
 		templight[10]=light.intensity.z;
 		templight[11]=light.intensity.w;
 		GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,firstSSBO);
-		GL43.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,index,templight);
+		GL43.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,index*4,templight);
 		GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,0);
+		//ShaderDataCompatible.unMappify();
 	}
 	public static void updateAllLights() {
 		for(Light light : lights) {

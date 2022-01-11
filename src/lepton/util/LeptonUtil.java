@@ -26,17 +26,18 @@ import lepton.util.advancedLogger.Logger;
 
 public class LeptonUtil {
 	public static Class<?> locationReference=LeptonUtil.class;
-	public static int getTotalGPUMemory() {
-		IntBuffer ib=BufferUtils.createIntBuffer(1);
-		GL43.glGetIntegerv(0x9048,ib);
-		return ib.get(0);
-	}
-	public static int getUsedGPUMemory() {
+	private static int[] gpuMemoryInfo=new int[2];
+	/**
+	 * Returns an int array of size 2 containing: Used KB, total available KB
+	 */
+	public static int[] getGPUMemoryInfo() {
 		IntBuffer ib=BufferUtils.createIntBuffer(1);
 		GL43.glGetIntegerv(0x9049,ib);
 		int av=ib.get(0);
 		GL43.glGetIntegerv(0x9048,ib);
-		return ib.get(0)-av;
+		gpuMemoryInfo[0]=ib.get(0)-av;
+		gpuMemoryInfo[1]=ib.get(0);
+		return gpuMemoryInfo;
 	}
 	/**
 	 * Shove a float[] into a floatBuffer of the same size.

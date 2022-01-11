@@ -12,13 +12,12 @@ in vec3 glv;
 in vec2 mtc0;
 
 out vec2 texcoords;
-out int instanceID;
 out vec4 world_position;
 uniform mat4 proj_matrix;
 uniform mat4 world2view;
 
 void main() {
-	instanceID=int(gl_InstanceID);
+	int instanceID=int(gl_InstanceID);
 	vec4 particle=particles[instanceID].p;
 	vec3 campos=(inverse(world2view)[3]).xyz;
 	vec3 viewdir=normalize(campos-particle.xyz);

@@ -1,6 +1,6 @@
 package lepton.cpshlib;
 
-import static org.lwjgl.opengl.GL43.*;
+import static org.lwjgl.opengl.GL44.*;
 
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -12,7 +12,6 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.system.MemoryStack;
 
-import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.util.Deletable;
 import lepton.util.advancedLogger.Logger;
 
@@ -140,13 +139,17 @@ public abstract class ShaderDataCompatible extends Deletable {
 		return out;
 	}
 	public void initSSBOData(long sizeBytes, SSBO ssbo) {
-		initSSBOData(sizeBytes,ssbo.buffer);
+		initSSBOData(sizeBytes,ssbo.buffer,GL_STATIC_DRAW);
 	}
-	public static void initSSBOData(long sizeBytes, int ssbo) {
+	public static void initSSBOData(long sizeBytes, int ssbo, int mode) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo);
-		glBufferData(GL_SHADER_STORAGE_BUFFER,sizeBytes,GL_DYNAMIC_DRAW);
+		glBufferData(GL_SHADER_STORAGE_BUFFER,sizeBytes,mode);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
-		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	}
+	public static void initSSBODataImmutable(long sizeBytes, int ssbo, int mode) {
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo);
+		glBufferStorage(GL_SHADER_STORAGE_BUFFER,sizeBytes,mode);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER,0);
 	}
 	public static void updateSSBOData(FloatBuffer data, SSBO ssbo) {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
@@ -199,6 +202,23 @@ public abstract class ShaderDataCompatible extends Deletable {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER,buffer);
 		try {
 			ret=glMapBuffer(GL_SHADER_STORAGE_BUFFER, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			bufferMapped=true;
+		} catch (NullPointerException e) {
+			Logger.log(4,"Buffer map failure");
+		}
+		return ret;
+	}
+	/**
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
+	 */
+	public static FloatBuffer mappifyRange(int buffer, int mode, long offset, int length) {
+		if(bufferMapped) {
+			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer when you're done. Is it really that difficult?");
+		}
+		FloatBuffer ret=null;
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER,buffer);
+		try {
+			ret=glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, length, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
 			bufferMapped=true;
 		} catch (NullPointerException e) {
 			Logger.log(4,"Buffer map failure");

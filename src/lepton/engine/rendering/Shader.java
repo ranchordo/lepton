@@ -23,19 +23,23 @@ public class Shader extends ShaderDataCompatible {
 		defaults.put("bloom",1);
 		defaults.put("ssao",2);
 		defaults.put("ssaoMul",3);
-		
+
 		defaults.put("iPosition",0);
 		defaults.put("iNormal",1);
 		defaults.put("iNoise",2);
 		defaultsInited=true;
 	}
 	private static void printShaderError(String fname, String ext, int prog) {
-		String error=glGetShaderInfoLog(prog);
-		if(error.isEmpty()) {
-			Logger.log(4,fname+ext+" did not compile, but the error output was blank. This typically means that your graphics driver is incorrectly configured. "
-					+ "If you are using a system with two graphics cards, make sure the correct one is being used. (this is commonly caused from intel integrated)");
+		int status=glGetShaderi(prog, GL_COMPILE_STATUS);
+		if(status!=1) {
+			String error=glGetShaderInfoLog(prog);
+			Logger.log(3,"COMPILE_STATUS is "+status+" and gl error code is "+glGetError()+". More info:");
+			if(error.isEmpty()) {
+				Logger.log(4,fname+ext+" did not compile, but the error output was blank. This typically means that your graphics driver is incorrectly configured. "
+						+ "If you are using a system with two graphics cards, make sure the correct one is being used. (this is commonly caused from intel integrated)");
+			}
+			Logger.log(4,"In "+fname+ext+": "+error);
 		}
-		Logger.log(4,"In "+fname+ext+": "+error);
 	}
 	private static boolean defaultsInited=false;
 	public static final boolean IGNORE_MISSING=true;
@@ -55,25 +59,21 @@ public class Shader extends ShaderDataCompatible {
 	public HashMap<String,Integer> locationCache=new HashMap<String,Integer>();
 	public Shader(String fname) {
 		this.fname=fname;
+		glGetError();
 		program=glCreateProgram();
 		syncRequiredShaderDataValues(program, IGNORE_MISSING);
 		vs=glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vs, readFile(fname+".vsh"));
 		glCompileShader(vs);
-		if(glGetShaderi(vs, GL_COMPILE_STATUS) != 1) {
-			printShaderError(fname,".vsh",vs);
-		}
-		
+		printShaderError(fname,".vsh",vs);
 		fs=glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fs, readFile(fname+".fsh"));
 		glCompileShader(fs);
-		if(glGetShaderi(fs, GL_COMPILE_STATUS) != 1) {
-			printShaderError(fname,".fsh",fs);
-		}
-		
+		printShaderError(fname,".fsh",fs);
+
 		glAttachShader(program,vs);
 		glAttachShader(program,fs);
-		
+
 		String geoShader=readFile_ret(fname+".gsh");
 		if(geoShader!=null) {
 			Logger.log(0,"Found geometry shader "+fname+".gsh, loading it...");
@@ -85,7 +85,7 @@ public class Shader extends ShaderDataCompatible {
 			}
 			glAttachShader(program,gs);
 		}
-		
+
 		glBindAttribLocation(program,0,"glv");
 		glBindAttribLocation(program,2,"gln");
 		glBindAttribLocation(program,3,"glc");
@@ -93,7 +93,7 @@ public class Shader extends ShaderDataCompatible {
 		glBindAttribLocation(program,13,"material");
 		glBindAttribLocation(program,14,"tangent");
 		glBindAttribLocation(program,15,"bitangent");
-		
+
 		glLinkProgram(program);
 		if(glGetProgrami(program,GL_LINK_STATUS)!=GL_TRUE) {
 			Logger.log(4,"In shader "+fname+" during program linking routine: "+glGetProgramInfoLog(program));

@@ -94,7 +94,7 @@ public class EngineTest {
 		CleanupTasks.add(()->mainConsoleWindow.close());
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
 		
-		GLContextInitializer.initializeGLContext(true,1920,1080,false,"Physics, graphics, sound, computation, and instanced and non-instanced 2d and 3d rendering");
+		GLContextInitializer.initializeGLContext(true,1280,720,false,"Physics, graphics, sound, computation, and instanced and non-instanced 2d and 3d rendering");
 		
 		Shader screen=new Shader("screen");
 		Shader screen_basic_bloom=new Shader("screen_basic_bloom");
@@ -126,10 +126,9 @@ public class EngineTest {
 		cube.geo.g.zombify();
 		
 		float amb=0.02f;
-		GLContextInitializer.cameraTransform=new Transform(new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1));
-		Matrix4f t=GLContextInitializer.cameraTransform.getMatrix(new Matrix4f());
+		Matrix4f t=new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1);
 		t.invert();
-		GLContextInitializer.cameraTransform.set(t);
+		GLContextInitializer.cameraTransform=new Transform(t);
 		Lighting.addLight(new Light(Light.LIGHT_AMBIENT,0,0,0, amb,amb,amb,1));
 		cube.geo.p.addToSimulation(PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING,physics);
 		floor.geo.p.addToSimulation(PhysicsWorld.EVERYTHING,PhysicsWorld.EVERYTHING,physics);
@@ -162,7 +161,7 @@ public class EngineTest {
 			glClearColor(0,0,0,1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			cube.logic();
-			floor.render();
+ 			floor.render();
 			instancedRenderer.renderInstanced(renderRoutine);
 			cube.postrender();
 			timeProfiler.stop(1);
@@ -204,7 +203,7 @@ public class EngineTest {
 			timeProfiler.stop(3);
 			timeProfiler.submit();
 			GLContextInitializer.timeCalcEnd();
-			System.out.println(EngineTest.timeProfiler.toString());
+//			System.out.println(EngineTest.timeProfiler.toString());
 		}
 		CleanupTasks.cleanUp();
 	}

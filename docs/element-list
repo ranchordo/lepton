@@ -8,6 +8,8 @@ lepton.engine.physics
 lepton.engine.rendering
 lepton.engine.rendering.instanced
 lepton.engine.rendering.lighting
+lepton.engine.rendering.pipelineElements
+lepton.engine.rendering.pipelines
 lepton.engine.util
 lepton.optim.objpoollib
 lepton.optim.tensorlib.main

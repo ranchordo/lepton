@@ -1,5 +1,5 @@
 #version 430 core
-#define FALLOFF 0.01
+#define FALLOFF 0.5
 layout (location = 0) out vec4 FragColor;
 
 struct Light {
@@ -13,7 +13,6 @@ layout (std140) buffer lights_buffer {
 };
 
 in vec2 texcoords;
-in int instanceID;
 in vec4 world_position;
 
 uniform int num_lights;

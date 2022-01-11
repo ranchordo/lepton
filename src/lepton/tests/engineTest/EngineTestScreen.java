@@ -12,7 +12,9 @@ import lepton.engine.graphics2d.tiles.Group2d;
 import lepton.engine.graphics2d.tiles.PieChart;
 import lepton.engine.graphics2d.tiles.TextGroup;
 import lepton.engine.graphics2d.tiles.Tile2d;
+import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.instanced.InstancedRenderer;
+import lepton.util.LeptonUtil;
 
 public class EngineTestScreen extends Tile2d {
 	public Group2d group=new Group2d();
@@ -26,7 +28,8 @@ public class EngineTestScreen extends Tile2d {
 		t.mouseClickRight=new Tile2d.EventListener() {@Override public void onEvent() {System.out.println("dbgtext.event.mouseClickRight");}};
 		t.mouseClickMiddle=new Tile2d.EventListener() {@Override public void onEvent() {System.out.println("dbgtext.event.mouseClickMiddle");}};
 		group.add(new TextGroup("No data",EngineTest.fonts.get("consolas"),-1,0.8f,0.03f,0.2f,0.2f,0.2f,Tile2d.renderer).setAsParent().setPosMode(Tile2d.PosMode.TOP_LEFT).initThis());
-		group.add(new TextGroup("Use arrow keys and SPACE to move",EngineTest.fonts.get("consolas"),-1,0.7f,0.04f,0.2f,0.2f,0.2f,Tile2d.renderer).setAsParent().setPosMode(Tile2d.PosMode.TOP_LEFT).initThis());
+		group.add(new TextGroup("No data",EngineTest.fonts.get("consolas"),-1,0.74f,0.03f,0.2f,0.2f,0.2f,Tile2d.renderer).setAsParent().setPosMode(Tile2d.PosMode.TOP_LEFT).initThis());
+		group.add(new TextGroup("Use arrow keys and SPACE to move",EngineTest.fonts.get("consolas"),-1,0.64f,0.04f,0.2f,0.2f,0.2f,Tile2d.renderer).setAsParent().setPosMode(Tile2d.PosMode.TOP_LEFT).initThis());
 		float height=-0.9f;
 		for(int i=EngineTest.timeProfiler.times.length-1;i>=0;i--) {
 			Vector3f col=((PieChart)group.getList().get(1)).rgbs[i];
@@ -43,13 +46,28 @@ public class EngineTestScreen extends Tile2d {
 			dbg.setLength(0);
 			dbg.append("Memory usage: ");
 			dbg.append(String.format("%3.2f",((float)(Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/(float)Runtime.getRuntime().totalMemory())*100.0f));
-			dbg.append("% of ");
+			dbg.append("% used of ");
 			dbg.append(Runtime.getRuntime().totalMemory()/1048576.0f);
 			dbg.append("MB. Frame rate (unlimited): ");
 			dbg.append(String.format("%3.2f", fr));
 			dbg.append("fps");
 			((TextGroup)group.getList().get(0)).setString(dbg.toString());
 			((TextGroup)group.getList().get(2)).setString(EngineTest.timeProfiler.toString());
+			dbg.setLength(0);
+			dbg.append("GPU Memory usage: ");
+			int[] gmeminfo=LeptonUtil.getGPUMemoryInfo();
+			if(gmeminfo[0]==0 && gmeminfo[1]==0) {
+				dbg.append("failed to get GPU memory info. This probably means you're running on a different card than I expected.");
+			} else {
+				float perc=100.0f*(gmeminfo[0]/(float)gmeminfo[1]);
+				dbg.append(String.format("%3.4f",perc));
+				dbg.append("% (");
+				dbg.append(gmeminfo[0]);
+				dbg.append(" KB) used of ");
+				dbg.append(gmeminfo[1]);
+				dbg.append(" KB. If this percentage is increasing, BAD! File an issue on github.");
+			}
+			((TextGroup)group.getList().get(3)).setString(dbg.toString());
 			PieChart pc=((PieChart)group.getList().get(1));
 			for(int i=0;i<EngineTest.timeProfiler.times.length;i++) {
 				pc.data[i]=(int)EngineTest.timeProfiler.times[i];

@@ -41,9 +41,9 @@ public class Screen {
 			0,1
 		};
 		glBindBuffer(GL_ARRAY_BUFFER,vbo);
-		glBufferData(GL_ARRAY_BUFFER,LeptonUtil.asFloatBuffer(v_data, BufferUtils.createFloatBuffer(v_data.length)),GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER,v_data,GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER,tbo);
-		glBufferData(GL_ARRAY_BUFFER,LeptonUtil.asFloatBuffer(t_data, BufferUtils.createFloatBuffer(t_data.length)),GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER,t_data,GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 	}
 	float[] mma=new float[16];

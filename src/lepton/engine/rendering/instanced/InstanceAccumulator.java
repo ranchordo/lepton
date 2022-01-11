@@ -62,7 +62,7 @@ public class InstanceAccumulator {
 			FloatBuffer newbuffer=BufferUtils.createFloatBuffer(capacity);
 			GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,ssbo.buffer);
 			GL43.glGetBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,0,newbuffer);
-			GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER,sizeFloats*4,GL43.GL_STATIC_DRAW);
+			GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER,sizeFloats*4,GL43.GL_STREAM_DRAW);
 			GL43.glBufferSubData(GL43.GL_SHADER_STORAGE_BUFFER,0,newbuffer);
 			GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER,0);
 			capacity=sizeFloats;
