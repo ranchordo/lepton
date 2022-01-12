@@ -60,7 +60,7 @@ public class EngineTestScreen extends Tile2d {
 				dbg.append("failed to get GPU memory info. This probably means you're running on a different card than I expected.");
 			} else {
 				float perc=100.0f*(gmeminfo[0]/(float)gmeminfo[1]);
-				dbg.append(String.format("%3.4f",perc));
+				dbg.append(String.format("%3.7f",perc));
 				dbg.append("% (");
 				dbg.append(gmeminfo[0]);
 				dbg.append(" KB) used of ");

@@ -33,9 +33,6 @@ float rand(float fli) {
 void main() {
 	int particleID=int(gl_GlobalInvocationID.x+(invocation_dimensions.x*gl_GlobalInvocationID.y)+(invocation_dimensions.x*invocation_dimensions.y*gl_GlobalInvocationID.z));
 	int nparticles=int(invocation_dimensions.x*invocation_dimensions.y*invocation_dimensions.z);
-	//particles[particleID].p.y=particles[particleID].p.y+(0.03*rand(particleID));
-	//particles[particleID].p.x=particles[particleID].p.x+(0.01*(rand(particleID+4)*2-1));
-	//particles[particleID].p.z=particles[particleID].p.z+(0.01*(rand(particleID+3)*2-1));
 	particles[particleID].p+=particles[particleID].v*dt;
 	float tf=time*1000000.0;
 	particles[particleID].v+=noise_amp*vec4(rand(particleID+5+tf)*2-1,rand(particleID+4+tf)*2-0.3,rand(particleID+3+tf)*2-1,0);

@@ -79,6 +79,7 @@ public class EngineTest {
 	private static EngineTestCube cube;
 	private static FileHandler fh;
 	private static void errorLog() {
+		fh=new FileHandler(LeptonUtil.getExternalPath()+"/EngineTest");
 		Logger.simulateLocalLog(fh);
 	}
 	/**
@@ -120,7 +121,6 @@ public class EngineTest {
 		
 		physics.EXPOSE_COLLISION_DATA=true;
 		InstanceAccumulator.mergeSSBOsOnDuplicate=InstanceAccumulator.NO_MERGE;
-		fh=new FileHandler(LeptonUtil.getExternalPath()+"/EngineTest");
 		
 		Audio.init();
 		

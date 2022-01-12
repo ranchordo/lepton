@@ -9,7 +9,7 @@ public abstract class LogHandler {
 		return formatter.format(LocalDateTime.now());
 	}
 	public static String getLogString(LogEntry entry) {
-		return (entry.level.prefix.isEmpty()?entry.getTimestampString()+" ":("["+entry.getTimestampString()+" "))+entry.level.prefix+(entry.level.prefix.isEmpty()?"":"]: ")+entry.message;
+		return (entry.level.prefix.isEmpty()?"":("["+entry.getTimestampString()+" "))+entry.level.prefix+(entry.level.prefix.isEmpty()?"":"]: ")+entry.message;
 	}
 	public boolean isUnique() {
 		for(LogHandler handler : Logger.handlers) {
