@@ -130,7 +130,7 @@ public class GLContextInitializer {
 	}
 	public static void initializeGLContext(boolean showWindow, int w, int h, boolean fullscreen, String windowTitle) {
 		if(!glfwInit()) {
-			Logger.log(4,"GLFW init error.");
+			Logger.log(3,"GLFW init error.");
 		}
 		GLFWVidMode d=glfwGetVideoMode(glfwGetPrimaryMonitor());
 		fullscreen&=showWindow; //DO NOT DELETE THIS WHATEVER YOU DO
