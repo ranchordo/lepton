@@ -31,7 +31,7 @@ public class GenericRunConfiguration {
 		if(ignoreCommands) {return;}
 		if(cmd.startsWith(base_command)) {
 			String rc=cmd.substring(cmd.indexOf(" ")+1);
-			boolean command=false;
+			boolean command=false; 
 			for(short i=0;i<configNames.length;i++) {
 				String configName=configNames[i];
 				if(rc.equals(configName)) {
