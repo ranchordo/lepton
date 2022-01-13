@@ -42,6 +42,7 @@ void main() {
 	int a=stindex;
 	int b=int(mod(stindex+toemit,nparticles));
 	bool reEmit=((particleID>=min(a,b)) && (particleID<max(a,b))) ^^ (b<a);
+	
 	particles[particleID].p=(int(!reEmit)*particles[particleID].p)+(int(reEmit)*vec4(origin,time));
 	particles[particleID].v=(int(!reEmit)*particles[particleID].v)+(int(reEmit)*vec4(Vi+1*vec3(rand(particleID+7)*2-1,rand(particleID+8)*2-1,rand(particleID+9)*2-1),0));
 }

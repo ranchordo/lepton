@@ -58,13 +58,6 @@ public class Logger {
 	public static void setCleanupTask(LoggerFinalCleanup lfc) {
 		Logger.lfc=lfc;
 	}
-	public static void log(LogEntry entry) {
-		if(localLog && entry.level.keepLocalLog) {local.add(entry);}
-		for(LogHandler handler : handlers) {
-			handler.handle(entry);
-		}
-		entry.level.tryExit();
-	}
 	public static void simulateLocalLog(LogHandler handler) {
 		for(LogEntry e : local) {
 			handler.handle(e);
@@ -77,6 +70,13 @@ public class Logger {
 			}
 		}
 	}
+	public static void log(LogEntry entry) {
+		if(localLog && entry.level.keepLocalLog) {local.add(entry);}
+		for(LogHandler handler : handlers) {
+			handler.handle(entry);
+		}
+		entry.level.tryExit();
+	}
 	public static void log(int level, String message) {
 		log(new LogEntry(level,message));
 	}
@@ -85,6 +85,15 @@ public class Logger {
 	}
 	public static void log(int level, String message, Exception attachment) {
 		log(new LogEntry(level,message,attachment));
+	}
+	public static void log(int level, Object message) {
+		log(new LogEntry(level,message.toString()));
+	}
+	public static void log(LogLevel level, Object message) {
+		log(new LogEntry(level,message.toString()));
+	}
+	public static void log(int level, Object message, Exception attachment) {
+		log(new LogEntry(level,message.toString(),attachment));
 	}
 	public static void clearLocal() {
 		log(new LogEntry(logger_internal,"Clearing local logs"));

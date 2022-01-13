@@ -18,8 +18,8 @@ import lepton.engine.rendering.pipelines.RenderPipelineElement;
 
 public class BloomElement extends RenderPipelineElement {
 	private int amt;
-	protected BloomElement(int amount, RenderPipeline pipeline, String name, byte status) {
-		super(pipeline, name, status);
+	protected BloomElement(int amount, String name, byte status) {
+		super(name, status);
 		amt=amount;
 	}
 	public static Screen screen;

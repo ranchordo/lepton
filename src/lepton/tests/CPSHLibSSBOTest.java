@@ -10,6 +10,9 @@ import lepton.engine.rendering.FrameBuffer;
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.engine.rendering.Screen;
 import lepton.engine.rendering.Shader;
+import lepton.engine.rendering.pipelineElements.GenericCPSHDispatch;
+import lepton.engine.rendering.pipelineElements.ShowToWindow;
+import lepton.engine.rendering.pipelines.RenderPipeline;
 import lepton.util.CleanupTasks;
 import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
@@ -46,7 +49,6 @@ public class CPSHLibSSBOTest {
 		//Position: (A,B,D), Rotation (quat): (E,F,G,H), Scale: ([last frame's H]).
 		//The byte represented by "C" did not get written, causing components of various things to spill other places.
 		//Bytes do not end up in the required place anymore and are instead shifted. This can be persistent if you are using SSBOs persistently (which is how you *should* be using them):
-		//For example of how weird this can be visually, take a look at this: https://youtu.be/63gigCNJdZs?t=116
 		//Make sure that your sizing lines up so that frameshifts don't happen, barring complete memory or paging corruption.
 		
 		SSBO balls=ballInitializer.generateNewSSBO("balls_buffer",numBalls*sizeOfBall);
@@ -65,12 +67,31 @@ public class CPSHLibSSBOTest {
 		ballInitializer.dispatch(numBalls,1,1); //Initialize the balls! This sets their position and velocity to random values. The shader will fetch the correct ball from the buffer based on its gl_InvocationID.x value.
 		glMemoryBarrier(GL_ALL_BARRIER_BITS); //Make sure we're done with initializing the SSBO values before continuing
 		
+//		RenderPipeline pipeline=new RenderPipeline("CPSHLibSSBOTest");
+//		
+//		pipeline.add(()->{
+//			GenericCPSHDispatch c=new GenericCPSHDispatch("ProcRend",(byte)0,ballProcessorRenderer,GL_RGBA8,numBalls,1,1);
+//			c.uniformRoutines.add((cpsh)->cpsh.setUniform2f("image_size",GLContextInitializer.winW,GLContextInitializer.winH));
+//			c.hookTo("output","PostProc","input");
+//			return c;
+//		});
+//		pipeline.add(()->{
+//			GenericCPSHDispatch c=new GenericCPSHDispatch("PostProc",(byte)1,ballPost,GL_RGBA8,GLContextInitializer.winW,GLContextInitializer.winH,1);
+//			c.hookTo("output","Show","input");
+//			return c;
+//		});
+//		pipeline.add(()->{
+//			return new ShowToWindow("Show",(byte)2,0,GL_RGBA8);
+//		});
+//		pipeline.setupElements();
 		
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			glfwPollEvents();
 			if(glfwGetKey(GLContextInitializer.win,GLFW_KEY_ESCAPE)==1) {
 				glfwSetWindowShouldClose(GLContextInitializer.win,true);
 			}
+			
+//			pipeline.run();
 			
 			shaderOutput.bindImage(0);
 			ballProcessorRenderer.bind();
@@ -94,6 +115,8 @@ public class CPSHLibSSBOTest {
 			screen.render();
 			glEnable(GL_DEPTH_TEST);
 			glfwSwapBuffers(GLContextInitializer.win);
+			
+			
 		}
 		
 		CleanupTasks.cleanUp();

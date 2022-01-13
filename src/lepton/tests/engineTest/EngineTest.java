@@ -174,10 +174,12 @@ public class EngineTest {
  			floor.render();
 			instancedRenderer.renderInstanced(renderRoutine);
 			cube.postrender();
+			glFinish();
 			timeProfiler.stop(1);
 			timeProfiler.start(4);
 			debugScreen.logic();
 			debugScreen.render();
+			glFinish();
 			//System.out.println(GLContextInitializer.fr);
 			timeProfiler.stop(4);
 			timeProfiler.start(2);
@@ -207,6 +209,7 @@ public class EngineTest {
 			interfbo3.bindTexture(0,1);
 			blindfold.render();
 			glEnable(GL_DEPTH_TEST);
+			glFinish();
 			timeProfiler.stop(2);
 			timeProfiler.start(3);
 			glfwSwapBuffers(GLContextInitializer.win);

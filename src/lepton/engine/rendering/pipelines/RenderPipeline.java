@@ -9,9 +9,17 @@ import lepton.util.TimeProfiler;
 import lepton.util.advancedLogger.Logger;
 
 public class RenderPipeline {
+	@FunctionalInterface
+	public static interface PipelineAdditionRoutine {
+		public RenderPipelineElement run();
+	}
 	private TimeProfiler timeprofiler;
 	public TimeProfiler getTimeProfiler() {
 		return timeprofiler;
+	}
+	private ColorBufferPool colorBufferPool;
+	public ColorBufferPool getColorBufferPool() {
+		return colorBufferPool;
 	}
 	private HashMap<String,RenderPipelineElement> elements=new HashMap<String,RenderPipelineElement>();
 	private ArrayList<RenderPipelineElement> starting=new ArrayList<RenderPipelineElement>();
@@ -19,12 +27,18 @@ public class RenderPipeline {
 	private String name;
 	public RenderPipeline(String name) {
 		this.name=name;
+		colorBufferPool=new ColorBufferPool(name+"'s ColorBuffer");
 	}
 	public String getName() {
 		return name;
 	}
 	public HashMap<String,RenderPipelineElement> getElements() {
 		return elements;
+	}
+	public void add(PipelineAdditionRoutine r) {
+		RenderPipelineElement e=r.run();
+		e.setPipeline(this);
+		elements.put(e.getName(),e);
 	}
 	public void setupElements() {
 		//Process all hooks and timeprofiler names
@@ -49,21 +63,28 @@ public class RenderPipeline {
 				ending=e.getValue();
 			}
 		}
-		if(starting.isEmpty() || ending==null) {
-			Logger.log(4,"No starting or ending elements.");
+		String[] timeprofilernames=new String[map.size()];
+		for(Entry<String,Integer> e : map.entrySet()) {
+			timeprofilernames[e.getValue()]=e.getKey();
+		}
+		timeprofiler=new TimeProfiler(timeprofilernames);
+		if(starting.isEmpty()) {
+			Logger.log(4,"No starting elements.");
 		}
 	}
 	public FrameBuffer run() {
+		timeprofiler.clear();
 		for(Entry<String,RenderPipelineElement> e : elements.entrySet()) {
 			e.getValue().reset();
 		}
 		for(RenderPipelineElement e : starting) {
-			e.execute();
-			e.propagate();
+			e.fillBlankInputs();
+			e.executeIfFilled();
 		}
 		for(Entry<String,RenderPipelineElement> e : elements.entrySet()) {
 			e.getValue().postexec();
 		}
-		return ending.getOutputs();
+		timeprofiler.submit();
+		return ending==null?null:ending.getOutputs();
 	}
 }

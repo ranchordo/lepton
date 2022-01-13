@@ -3,13 +3,14 @@ package lepton.optim.objpoollib;
 import java.util.ArrayList;
 import java.util.List;
 
+import lepton.engine.util.Deletable;
 import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
  * Object pool with custom behavior and object variation.
  */
-public abstract class VariedAbstractObjectPool<T> {
+public abstract class VariedAbstractObjectPool<T> extends Deletable {
 	/**
 	 * Amount of microseconds to keep unused elements
 	 */
@@ -33,6 +34,7 @@ public abstract class VariedAbstractObjectPool<T> {
 		poolType=type;
 		PoolStrainer.activePools.add(this);
 		prototype=p;
+		adrt();
 	}
 	/**
 	 * Override this as a "destructor"
@@ -92,15 +94,9 @@ public abstract class VariedAbstractObjectPool<T> {
 	}
 	public String getPoolType() {return poolType;}
 	/**
-	 * Remove ourselves from PoolStrainer's active pools.
-	 */
-	public void die() {
-		PoolStrainer.activePools.remove(this);
-	}
-	/**
 	 * Drop all elements of the pool.
 	 */
-	public void free() {
+	@Override public void delete() {
 		//Drop all elements and garbage collect
 		for(PoolElement<T> pe : pool) {
 			handleDeletion(pe);
@@ -110,5 +106,7 @@ public abstract class VariedAbstractObjectPool<T> {
 		}
 		pool.clear();
 		inUse.clear();
+		PoolStrainer.activePools.remove(this);
+		rdrt();
 	}
 }

@@ -37,6 +37,7 @@ public class GLContextInitializer {
 	public static ShaderDataCompatible activeShader;
 	public static ShaderLoader shaderLoader=new ShaderLoader();
 	public static CPSHLoader cpshLoader=new CPSHLoader();
+	public static Screen defaultScreen;
 	/**
 	 * Default graphical rendering shader.
 	 */
@@ -176,6 +177,7 @@ public class GLContextInitializer {
 		glViewport(0,0,winW,winH);
 		//Init handlers:
 		BloomHandler.init();
+		defaultScreen=new Screen();
 	}
 	public static void doCursor(long win, boolean grabbed, boolean hidden) {
 		if(!grabbed && !hidden) {glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);}

@@ -15,10 +15,10 @@ import lepton.util.advancedLogger.Logger;
  * Can contain multiple color buffers, but can only contain one depth and stencil buffer. 
  */
 public class FrameBuffer extends Deletable {
-	public static final int FRAMEBUFFER=0, RENDERBUFFER=1, TEXTUREBUFFER=2;
+	public static final int FRAMEBUFFER=0, DEPTHBUFFER=1, TEXTUREBUFFER=2;
 	private int fbo;
 	private int[] tbo;
-	private int rbo;
+	private int dbo;
 	private int multiSample=-1;
 	private int[] attachList;
 	private int format;
@@ -30,8 +30,8 @@ public class FrameBuffer extends Deletable {
 		switch(id) {
 		case FRAMEBUFFER:
 			return fbo;
-		case RENDERBUFFER:
-			return rbo;
+		case DEPTHBUFFER:
+			return dbo;
 		case TEXTUREBUFFER:
 			return tbo[secID];
 		default:
@@ -81,19 +81,19 @@ public class FrameBuffer extends Deletable {
 		int texParam=(ms>0)?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D;
 		fbo=glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER,fbo);
+		flexibleBuffers=true;
 		if(ntbo!=-1) {
-			flexibleBuffers=true;
+			flexibleBuffers=false;
 			tbo=new int[ntbo];
 			attachList=new int[ntbo];
 			for(int i=0;i<ntbo;i++) {
 				tbo[i]=glGenTextures();
 				glBindTexture(texParam,tbo[i]);
 				if(ms>0) {
-					glTexImage2DMultisample(texParam,ms,format,GLContextInitializer.winW,GLContextInitializer.winH,true);
+					glTexStorage2DMultisample(texParam,ms,format,GLContextInitializer.winW,GLContextInitializer.winH,true);
 				} else {
-					glTexImage2D(texParam,0,format,GLContextInitializer.winW,GLContextInitializer.winH,0,GL_RGBA,GL_FLOAT,(FloatBuffer)null);
+					glTexStorage2D(texParam,1,format,GLContextInitializer.winW,GLContextInitializer.winH);
 				}
-				this.format=format;
 				glTexParameteri(texParam,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 				glTexParameteri(texParam,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 				glTexParameteri(texParam,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
@@ -103,27 +103,40 @@ public class FrameBuffer extends Deletable {
 				attachList[i]=GL_COLOR_ATTACHMENT0+i;
 			}
 		}
-		rbo=glGenRenderbuffers();
-		glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
+		dbo=glGenTextures();
+		glBindTexture(texParam,dbo);
 		if(ms>0) {
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER,ms,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+			glTexStorage2DMultisample(texParam,ms,GL_DEPTH_COMPONENT24,GLContextInitializer.winW,GLContextInitializer.winH,true);
 		} else {
-			glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+			glTexStorage2D(texParam,1,GL_DEPTH_COMPONENT24,GLContextInitializer.winW,GLContextInitializer.winH);
 		}
+		this.format=format;
+		glTexParameteri(texParam,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(texParam,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glTexParameteri(texParam,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+	    glTexParameteri(texParam,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+	    
+	    glTexParameteri(texParam,GL_TEXTURE_COMPARE_MODE,GL_COMPARE_REF_TO_TEXTURE);
+	    glTexParameteri(texParam,GL_TEXTURE_COMPARE_MODE,GL_LEQUAL);
 		
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,rbo);
-		
-//		rbo=glGenTextures();
-//		glBindTexture(GL_TEXTURE_2D,tbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,texParam,dbo,0);
+//		rbo=glGenRenderbuffers();
+//		glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
+//		if(ms>0) {
+//			glRenderbufferStorageMultisample(GL_RENDERBUFFER,ms,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+//		} else {
+//			glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+//		}
 //		
-//		glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH,0,GL_DEPTH_STENCIL,GL_UNSIGNED_INT_24_8,(FloatBuffer)null);
-		
+//		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,rbo);
+				
 		if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE) {
+			Logger.log(3,glCheckFramebufferStatus(GL_FRAMEBUFFER));
 			Logger.log(4,"Framebuffer initiation did not result in a FRAMEBUFFER_COMPLETE flag.");
 		}
 		glBindTexture(texParam,0);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-		glBindRenderbuffer(GL_RENDERBUFFER,0);
+//		glBindRenderbuffer(GL_RENDERBUFFER,0);
 		adrt();
 	}
 	/**
@@ -132,7 +145,7 @@ public class FrameBuffer extends Deletable {
 	public void delete() {
 		glDeleteFramebuffers(fbo);
 		glDeleteTextures(tbo);
-		glDeleteRenderbuffers(rbo);
+//		glDeleteRenderbuffers(rbo);
 		rdrt();
 	}
 	/**
