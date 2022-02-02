@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.Consumer;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
@@ -21,6 +23,7 @@ import org.lwjgl.BufferUtils;
 
 import com.bulletphysics.linearmath.Transform;
 
+import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.physics.PhysicsObject;
 import lepton.engine.util.Deletable;
 import lepton.optim.objpoollib.DefaultVecmathPools;
@@ -62,12 +65,12 @@ public class GObject extends Deletable {
 
 	private int tan_id;
 	private int bit_id;
-	
+
 	/**
 	 * For instanced rendering. Use on things like particle systems (also use abstractObjectPool for those too, they're awesome).
 	 */
 	public int instances=-1;
-	
+
 
 	public void addTri(Tri toAdd) {
 		if(!trisLocked) {tris.add(toAdd);}
@@ -261,7 +264,7 @@ public class GObject extends Deletable {
 		glDeleteBuffers(c_id);
 		glDeleteBuffers(t_id);
 		glDeleteBuffers(n_id);
-		
+
 		glDeleteBuffers(m_id);
 		glDeleteBuffers(tan_id);
 		glDeleteBuffers(bit_id);
@@ -294,7 +297,15 @@ public class GObject extends Deletable {
 	private Matrix4f m4_=new Matrix4f();
 	private float[] m3_=new float[9];
 	public ViewMatrixModifier viewMatrixModifier=null;
-//	private float sc;
+	/**
+	 * For specuar-based lighting stuff
+	 */
+	public boolean useNegativeLightingValue=false;
+	/**
+	 * For additional uniform stuff
+	 */
+	public Consumer<ShaderDataCompatible> additionalUniformRoutine=null;
+	//	private float sc;
 	public void highRender_customTransform(Transform mm) {
 		if(renderingShader==null) {
 			GLContextInitializer.defaultMainShader.bind();
@@ -303,7 +314,7 @@ public class GObject extends Deletable {
 		}
 		if(mm!=null) {
 			mm.getMatrix(m4_).getRotationScale(m);
-//			sc=LeptonUtil.getAvgScale(m);
+			//			sc=LeptonUtil.getAvgScale(m);
 			f=LeptonUtil.asFloatBuffer(toFloatArray(m,m3_),f);
 			//mma=new float[16];
 			mm.getOpenGLMatrix(mma);
@@ -325,9 +336,11 @@ public class GObject extends Deletable {
 
 		GLContextInitializer.activeShader.setUniform1i("millis",(int)(LeptonUtil.micros()));
 
-		GLContextInitializer.activeShader.setUniform1f("useLighting", (this.useLighting && GLContextInitializer.useGraphics) ? 2 : 0);
+		GLContextInitializer.activeShader.setUniform1f("useLighting", (this.useLighting && GLContextInitializer.useGraphics) ? (this.useNegativeLightingValue?-1:2) : 0);
 		GLContextInitializer.activeShader.setUniform1i("textureUse", this.vmap.tex.loadedBitflag());
-
+		if(additionalUniformRoutine!=null) {
+			additionalUniformRoutine.accept(GLContextInitializer.activeShader);
+		}
 		GLContextInitializer.activeShader.applyAllSSBOs();
 		this.vmap.tex.bind();
 		//glScalef(scale.x,scale.y,scale.z);
@@ -649,7 +662,14 @@ public class GObject extends Deletable {
 			throw new SecurityException("LoadOBJ(FN) -> Tris are locked. What the heck were you thinking?");
 		}
 		try {
-			tris=loadOBJ_raw(new FileInputStream(LeptonUtil.getExternalPath()+"/"+filename+".obj"));
+			InputStream mtl=null;
+			try {
+				mtl=LeptonUtil.getOptionallyIntegratedStream(filename,".mtl");
+				Logger.log(0,"Found material library "+filename+".mtl");
+			} catch(IOException e) {
+				Logger.log(0,"No material library "+filename+".mtl");
+			}
+			tris=loadOBJ_raw(LeptonUtil.getOptionallyIntegratedStream(filename,".obj"),mtl);
 			if(texAV()) {
 				boolean texError=true;
 				for(String ext : new String[] {".png",".jpg"}) {
@@ -658,9 +678,9 @@ public class GObject extends Deletable {
 						Logger.log(0,"loadOBJ(f) multi-ext texture search: Loading new texture stem "+filename+"(extension "+ext+"). If you see this often, there's a problem.");
 						for(int i=0;i<Texture.NUM_TEXTURES;i++) {
 							try {
-								this.vmap.tex.create(1,filename,"_"+(i==0?"":Texture.tex_names[i])+"."+ext);
+								this.vmap.tex.create(i,filename,(i==0?"":("_"+Texture.tex_names[i]))+ext);
 							} catch (FileNotFoundException e) {
-								Logger.log(0,"GObject "+filename+": No "+Texture.tex_names[i]+" texture.");
+								Logger.log(0,"GObject "+filename+": No "+Texture.tex_names[i]+" texture \""+filename+(i==0?"":("_"+Texture.tex_names[i]))+ext+"\".");
 							}
 						}
 						this.vmap.tex.name=search;
@@ -712,7 +732,14 @@ public class GObject extends Deletable {
 			throw new SecurityException("LoadOBJ(FN,TN) -> Tris are locked.");
 		}
 		try {
-			tris=loadOBJ_raw(LeptonUtil.getOptionallyIntegratedStream(filename,".obj"));
+			InputStream mtl=null;
+			try {
+				mtl=LeptonUtil.getOptionallyIntegratedStream(filename,".mtl");
+				Logger.log(0,"Found material library "+filename+".mtl");
+			} catch(IOException e) {
+				Logger.log(0,"No material library "+filename+".mtl");
+			}
+			tris=loadOBJ_raw(LeptonUtil.getOptionallyIntegratedStream(filename,".obj"),mtl);
 			loadTexture(texname,tex_ext);
 		} catch(FileNotFoundException e) {
 			e.printStackTrace();
@@ -726,18 +753,46 @@ public class GObject extends Deletable {
 	/**
 	 * Load OBJ file with no setup whatsoever. Do not use.
 	 */
-	public ArrayList<Tri> loadOBJ_raw(InputStream f) throws FileNotFoundException, IOException { //Wavefront file parser "backend"
+	public ArrayList<Tri> loadOBJ_raw(InputStream f, InputStream fmtl) throws IOException { //Wavefront file parser "backend"
 		if(trisLocked) {
 			throw new SecurityException("LoadOBJ_raw -> Tris are locked. What the heck were you thinking?");
 		}
 		fromOBJ=true;
 		BufferedReader reader=new BufferedReader(new InputStreamReader(f));
+		BufferedReader mtlreader=new BufferedReader(new InputStreamReader(fmtl));
 		String line;
 		ArrayList<Vector3f> vertices=new ArrayList<Vector3f>();
 		ArrayList<Vector3f> normals=new ArrayList<Vector3f>();
 		ArrayList<Vector3f> vertIndices=new ArrayList<Vector3f>();
 		ArrayList<Vector3f> normIndices=new ArrayList<Vector3f>();
 		ArrayList<Vector3f> texIndices=new ArrayList<Vector3f>();
+		ArrayList<Vector4f> colors=null;
+		HashMap<String, Vector4f> mtlcolors=null;
+		if(fmtl!=null) {
+			colors=new ArrayList<Vector4f>();
+			mtlcolors=new HashMap<String,Vector4f>();
+
+			String mtlname="";
+			while((line=mtlreader.readLine())!=null) {
+				if(line.startsWith("newmtl ")) {
+					mtlname=line.substring(7);
+				} else if(line.startsWith("Kd ")) {
+					float x=Float.valueOf(line.split(" ")[1]);
+					float y=Float.valueOf(line.split(" ")[2]);
+					float z=Float.valueOf(line.split(" ")[3]);
+					mtlcolors.put(mtlname,new Vector4f(x,y,z,1f));
+				} else if(line.startsWith("d ")) {
+					float x=Float.valueOf(line.split(" ")[1]);
+					Vector4f c=mtlcolors.get(mtlname);
+					if(c!=null) {
+						c.w=x;
+					}
+				}
+			}
+			line=null;
+			mtlreader.close();
+		}
+		Vector4f activeMaterial=null;
 		while((line=reader.readLine())!=null) {
 			if(line.startsWith("v ")) {
 				float x=Float.valueOf(line.split(" ")[1]);
@@ -749,6 +804,8 @@ public class GObject extends Deletable {
 				float y=Float.valueOf(line.split(" ")[2]);
 				float z=Float.valueOf(line.split(" ")[3]);
 				normals.add(new Vector3f(x,y,z));
+			} else if(line.startsWith("usemtl ")) {
+				activeMaterial=mtlcolors.get(line.substring(7));
 			} else if(line.startsWith("f ")) {
 				try {
 					float x=Float.valueOf(line.split(" ")[1].split("/")[0]);
@@ -764,6 +821,9 @@ public class GObject extends Deletable {
 						float yt=Float.valueOf(line.split(" ")[2].split("/")[1]);
 						float zt=Float.valueOf(line.split(" ")[3].split("/")[1]);
 						texIndices.add(new Vector3f(xt,yt,zt));
+					}
+					if(colors!=null) {
+						colors.add(activeMaterial);
 					}
 				} catch (NumberFormatException e) {
 					Logger.log(4,e.toString()+"\nOccurred on file line "+line,e);
@@ -788,6 +848,12 @@ public class GObject extends Deletable {
 				t.texcoords[0]=-1+(int)texIndices.get(i).x;
 				t.texcoords[1]=-1+(int)texIndices.get(i).y;
 				t.texcoords[2]=-1+(int)texIndices.get(i).z;
+			}
+			if(colors!=null) {
+				t.color[0]=colors.get(i).x;
+				t.color[1]=colors.get(i).y;
+				t.color[2]=colors.get(i).z;
+				t.color[3]=colors.get(i).w;
 			}
 			obj.add(t);
 		}

@@ -284,6 +284,9 @@ public abstract class ShaderDataCompatible extends Deletable {
 		}
 		int ret=glGetUniformLocation(program(),name);
 		locationCache.put(name,ret);
+		if(ret==-1) {
+			Logger.log(2,name+" is not a valid shader uniform ("+initialFname+")");
+		}
 		return ret;
 	}
 	public void setUniform1f(String name, float value) {

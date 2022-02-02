@@ -13,7 +13,7 @@ import lepton.util.advancedLogger.Logger;
 public class Texture {
 	public static int ALBEDO=0;
 	public static int NORMAL=1;
-	public static int METALLIC=2;
+	public static int SPECULAR=2;
 	public static int ROUGHNESS=3;
 	public static int AO=4;
 	
@@ -26,7 +26,7 @@ public class Texture {
 	/**
 	 * For printing / logging purposes. Also please change this ASAP if you're gonna change this at all, like NUM_TEXTURES (but not quite as important).
 	 */
-	public static String[] tex_names=new String[] {"albedo","normal","metallic","roughness","AO"};
+	public static String[] tex_names=new String[] {"albedo","normal","specular","roughness","AO"};
 	/**
 	 * Is Tan/Bitan data required for each corresponding texture? (default 0,1,0,0,0 [Index 1 is for normal maps, that's why we need tan/bitan]). Change if you're redoing PBR or adding other texture types.
 	 */

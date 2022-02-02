@@ -23,6 +23,7 @@ public class CPSHLibSSBOTest {
 		//This is probably going to be the most confusing example. Just a warning.
 		
 		Logger.setCleanupTask(()->CleanupTasks.cleanUp());
+		CleanupTasks.add(()->GLContextInitializer.cleanAllRemainingGLData());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
 		GLContextInitializer.initializeGLContext(true,500,500,false,"CPSHLIB initialization and GPU driver allocation test");
 		
@@ -67,58 +68,55 @@ public class CPSHLibSSBOTest {
 		ballInitializer.dispatch(numBalls,1,1); //Initialize the balls! This sets their position and velocity to random values. The shader will fetch the correct ball from the buffer based on its gl_InvocationID.x value.
 		glMemoryBarrier(GL_ALL_BARRIER_BITS); //Make sure we're done with initializing the SSBO values before continuing
 		
-//		RenderPipeline pipeline=new RenderPipeline("CPSHLibSSBOTest");
-//		
-//		pipeline.add(()->{
-//			GenericCPSHDispatch c=new GenericCPSHDispatch("ProcRend",(byte)0,ballProcessorRenderer,GL_RGBA8,numBalls,1,1);
-//			c.uniformRoutines.add((cpsh)->cpsh.setUniform2f("image_size",GLContextInitializer.winW,GLContextInitializer.winH));
-//			c.hookTo("output","PostProc","input");
-//			return c;
-//		});
-//		pipeline.add(()->{
-//			GenericCPSHDispatch c=new GenericCPSHDispatch("PostProc",(byte)1,ballPost,GL_RGBA8,GLContextInitializer.winW,GLContextInitializer.winH,1);
-//			c.hookTo("output","Show","input");
-//			return c;
-//		});
-//		pipeline.add(()->{
-//			return new ShowToWindow("Show",(byte)2,0,GL_RGBA8);
-//		});
-//		pipeline.setupElements();
+		RenderPipeline pipeline=new RenderPipeline("CPSHLibSSBOTest");
 		
+		pipeline.add(()->{
+			GenericCPSHDispatch c=new GenericCPSHDispatch("ProcRend",ballProcessorRenderer,GL_RGBA8,numBalls,1,1);
+			c.uniformRoutines.add((cpsh)->cpsh.setUniform2f("image_size",GLContextInitializer.winW,GLContextInitializer.winH));
+			c.hookTo("main","PostProc","main");
+			return c;
+		});
+		pipeline.add(()->{
+			GenericCPSHDispatch c=new GenericCPSHDispatch("PostProc",ballPost,GL_RGBA8,GLContextInitializer.winW,GLContextInitializer.winH,1);
+			c.hookTo("main","Show","main");
+			c.setAsStartingElement();
+			return c;
+		});
+		pipeline.add(()->{
+			return new ShowToWindow("Show",0,GL_RGBA8);
+		});
+		pipeline.setupElements();
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			glfwPollEvents();
 			if(glfwGetKey(GLContextInitializer.win,GLFW_KEY_ESCAPE)==1) {
 				glfwSetWindowShouldClose(GLContextInitializer.win,true);
 			}
 			
-//			pipeline.run();
+			pipeline.run();
 			
-			shaderOutput.bindImage(0);
-			ballProcessorRenderer.bind();
-			ballProcessorRenderer.setUniform2f("image_size",GLContextInitializer.winW,GLContextInitializer.winH);
-			ballProcessorRenderer.applyAllSSBOs();
-			ballProcessorRenderer.dispatch(numBalls,1,1); //Process the balls' physics and draw 'em! Again, the shader will fetch the correct ball from the buffer based on its gl_InvocationID.x value.
-			glMemoryBarrier(GL_ALL_BARRIER_BITS); //Make sure we're done with the SSBO before continuing, because the shader writes to the SSBO. It would be very bad if we progressed while it was half-written.
-			
-			ballPost.bind(); //This shader runs for every pixel on the image.
-			ballPost.applyAllSSBOs();
-			ballPost.dispatch(GLContextInitializer.winW,GLContextInitializer.winH,1); //Post-process the trail image with a terrible blur algorithm that runs once per frame.
-			glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT); //You know what this does, but I'll leave a comment here anyway. DO NOT FORGET THIS. If you forget SHADER_IMAGE_ACCESS_BARRIER_BIT, just use GL_ALL_BARRIER_BITS. Doesn't matter.
-			
-			//You know what this does:
-			glClearColor(1,0,1,1);
-			glClear(GL_COLOR_BUFFER_BIT);
-			glDisable(GL_DEPTH_TEST);
-			shaderOutput.bindTexture(0);
-			screen_basic.bind();
-			FrameBuffer.unbind_all();
-			screen.render();
-			glEnable(GL_DEPTH_TEST);
-			glfwSwapBuffers(GLContextInitializer.win);
-			
-			
+//			shaderOutput.bindImage(0);
+//			ballProcessorRenderer.bind();
+//			ballProcessorRenderer.setUniform2f("image_size",GLContextInitializer.winW,GLContextInitializer.winH);
+//			ballProcessorRenderer.applyAllSSBOs();
+//			ballProcessorRenderer.dispatch(numBalls,1,1); //Process the balls' physics and draw 'em! Again, the shader will fetch the correct ball from the buffer based on its gl_InvocationID.x value.
+//			glMemoryBarrier(GL_ALL_BARRIER_BITS); //Make sure we're done with the SSBO before continuing, because the shader writes to the SSBO. It would be very bad if we progressed while it was half-written.
+//			
+//			ballPost.bind(); //This shader runs for every pixel on the image.
+//			ballPost.applyAllSSBOs();
+//			ballPost.dispatch(GLContextInitializer.winW,GLContextInitializer.winH,1); //Post-process the trail image with a terrible blur algorithm that runs once per frame.
+//			glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT); //You know what this does, but I'll leave a comment here anyway. DO NOT FORGET THIS. If you forget SHADER_IMAGE_ACCESS_BARRIER_BIT, just use GL_ALL_BARRIER_BITS. Doesn't matter.
+//			
+//			//You know what this does:
+//			glClearColor(1,0,1,1);
+//			glClear(GL_COLOR_BUFFER_BIT);
+//			glDisable(GL_DEPTH_TEST);
+//			shaderOutput.bindTexture(0);
+//			screen_basic.bind();
+//			FrameBuffer.unbind_all();
+//			screen.render();
+//			glEnable(GL_DEPTH_TEST);
+//			glfwSwapBuffers(GLContextInitializer.win);
 		}
-		
 		CleanupTasks.cleanUp();
 		//Now you might be thinking "Isn't that a lot of work for something I can create in processing in about 2 minutes?". Yes. It is. But here's the thing: Go up and increase numBalls to, like, 100,000 (NOT 1,000,000, be careful). It runs smoothly.
 		//If you have 60 balls, processing is better for this sort of thing. But with >1,000, this is going to work a lot better.

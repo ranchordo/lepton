@@ -26,7 +26,7 @@ public class EngineTestFloor {
 	public static final float side_len=0.62f;
 	private Vector3f origin;
 	private Quat4f quat;
-	transient WorldObject geo;
+	public transient WorldObject geo;
 
 	public Vector3f shape;
 	public EngineTestFloor(Vector3f origin, Quat4f quat) {
@@ -96,7 +96,7 @@ public class EngineTestFloor {
 
 		this.geo.g.addTri(new Tri(0,4,7, 4,4,4).setTexCoords(3,2,1));
 		this.geo.g.addTri(new Tri(7,3,0, 4,4,4).setTexCoords(1,0,3));
-		
+				
 		this.geo.g.setColor(1,1,1);
 		this.geo.g.setMaterial(0.02f,2.0f,0,0);
 

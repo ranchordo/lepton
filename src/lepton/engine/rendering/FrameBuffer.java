@@ -46,7 +46,7 @@ public class FrameBuffer extends Deletable {
 	}
 	public void setNumTexBuffers(int ntbo) {
 		if(!flexibleBuffers) {
-			Logger.log(4,"Tried to get the raw TBO list without a flexible buffer config. Init with ntbo=-1.");
+			Logger.log(4,"Tried to change num tex buffers without a flexible buffer config. Init with ntbo=-1.");
 		}
 		if(tbo!=null) {
 			if(tbo.length==ntbo) {
@@ -152,21 +152,21 @@ public class FrameBuffer extends Deletable {
 	 * Bind tbos[id] to a texture.
 	 */
 	public void bindTexture(int id) {
-		if(multiSample>0) {
-			throw new IllegalStateException("Cannot bind MSAA framebuffer to texture.");
-		}
-		glActiveTexture(GL_TEXTURE0);
 		bindTexture(id,0);
 	}
 	/**
 	 * Bind tbos[id] to a texture on texture unit "binding".
 	 */
 	public void bindTexture(int id, int binding) {
-		if(multiSample>0) {
-			throw new IllegalStateException("Cannot bind MSAA framebuffer to texture.");
-		}
 		glActiveTexture(GL_TEXTURE0+binding);
-		glBindTexture(GL_TEXTURE_2D,tbo[id]);
+		glBindTexture(multiSample>0?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D,tbo[id]);
+	}
+	/**
+	 * Bind dbo to a texture on texture unit "binding".
+	 */
+	public void bindDepthTexture(int binding) {
+		glActiveTexture(GL_TEXTURE0+binding);
+		glBindTexture(multiSample>0?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D,dbo);
 	}
 	/**
 	 * Blit (AKA copy) this framebuffer to another (this.tbos[0] to target.tbos[0]).

@@ -85,7 +85,7 @@ public class LeptonUtil {
 			return new FileInputStream(LeptonUtil.getExternalPath()+"/"+resource+ends);
 		} else {
 			resource=resource.substring(0,resource.length()-11);
-			InputStream ret=LeptonUtil.class.getResourceAsStream("/"+resource+ends);
+			InputStream ret=locationReference.getResourceAsStream("/"+resource+ends);
 			if(ret==null) {
 				throw new FileNotFoundException("/"+resource+ends+" integrated does not appear to exist.");
 			}

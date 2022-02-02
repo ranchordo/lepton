@@ -22,8 +22,7 @@ public class RenderPipeline {
 		return colorBufferPool;
 	}
 	private HashMap<String,RenderPipelineElement> elements=new HashMap<String,RenderPipelineElement>();
-	private ArrayList<RenderPipelineElement> starting=new ArrayList<RenderPipelineElement>();
-	private RenderPipelineElement ending=null;
+	protected RenderPipelineElement startingElement=null;
 	private String name;
 	public RenderPipeline(String name) {
 		this.name=name;
@@ -39,13 +38,16 @@ public class RenderPipeline {
 		RenderPipelineElement e=r.run();
 		e.setPipeline(this);
 		elements.put(e.getName(),e);
+		invalid=true;
 	}
+	protected boolean invalid=false;
+	private ArrayList<RenderPipelineElement> execOrder=new ArrayList<RenderPipelineElement>();
 	public void setupElements() {
-		//Process all hooks and timeprofiler names
+		//Process all hooks and timeprofiler names//
 		int i=0;
 		HashMap<String,Integer> map=new HashMap<String,Integer>();
 		for(Entry<String,RenderPipelineElement> e : elements.entrySet()) {
-			e.getValue().processHooks();
+			e.getValue().processAllHooks();
 			if(!map.containsKey(e.getKey())) {
 				map.put(e.getKey(),i);
 				i++;
@@ -53,38 +55,40 @@ public class RenderPipeline {
 			} else {
 				e.getValue().setTimeprofilerID(map.get(e.getKey()));
 			}
-			e.getValue().checkStatus();
-			if(e.getValue().status==0) {
-				starting.add(e.getValue());
-			} else if(e.getValue().status==2) {
-				if(ending!=null) {
-					Logger.log(4,"There can't be two ending pipeline elements.");
-				}
-				ending=e.getValue();
-			}
 		}
 		String[] timeprofilernames=new String[map.size()];
 		for(Entry<String,Integer> e : map.entrySet()) {
 			timeprofilernames[e.getValue()]=e.getKey();
 		}
 		timeprofiler=new TimeProfiler(timeprofilernames);
-		if(starting.isEmpty()) {
-			Logger.log(4,"No starting elements.");
+		
+		//Generate buffer tree and execution order
+		if(startingElement==null) {
+			Logger.log(4,name+": No starting element.");
+		}
+		generateBufferTree(startingElement,execOrder,null);
+	}
+	//Recursive function behind generating the buffer tree and execution order
+	private void generateBufferTree(RenderPipelineElement element, ArrayList<RenderPipelineElement> execOrder, FrameBuffer buffer) {
+		if(buffer==null) {buffer=element.generateStartingFramebuffer();}
+		element.setBuffer(buffer);
+		execOrder.add(element);
+		switch(element.getOutHooks().size()) {
+		case 0:
+			//Do nothing
+			break;
+		case 1:
+			generateBufferTree(element.getOutHooks().get(0).element,execOrder,buffer);
+			break;
+		default:
+			Logger.log(4,"NOOOOOO");
 		}
 	}
-	public FrameBuffer run() {
+	public void run() {
 		timeprofiler.clear();
-		for(Entry<String,RenderPipelineElement> e : elements.entrySet()) {
-			e.getValue().reset();
-		}
-		for(RenderPipelineElement e : starting) {
-			e.fillBlankInputs();
-			e.executeIfFilled();
-		}
-		for(Entry<String,RenderPipelineElement> e : elements.entrySet()) {
-			e.getValue().postexec();
+		for(RenderPipelineElement e : execOrder) {
+			e.execute();
 		}
 		timeprofiler.submit();
-		return ending==null?null:ending.getOutputs();
 	}
 }

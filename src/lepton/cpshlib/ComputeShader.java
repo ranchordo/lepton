@@ -77,9 +77,9 @@ public class ComputeShader extends ShaderDataCompatible {
 //		return !tfname.equals(Renderer.activeComputeShader.getFname());
 //	}
 	public void bind() {
-		if(GLContextInitializer.activeShader==this) {
-			return;
-		}
+//		if(GLContextInitializer.activeShader==this) {
+//			return;
+//		}
 		glUseProgram(program);
 		GLContextInitializer.activeShader=this;
 		Lighting.apply();

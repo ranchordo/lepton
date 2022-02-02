@@ -12,7 +12,6 @@ import lepton.engine.rendering.Shader;
  * Blurs an image
  */
 public class BloomHandler {
-	public static Screen screen;
 	public static Shader blurShader;
 	public static FrameBuffer fbo1;
 	public static FrameBuffer fbo2;
@@ -20,7 +19,6 @@ public class BloomHandler {
 	 * When you change screen resolution make sure to call update();
 	 */
 	public static void update() {
-		screen=new Screen();
 		blurShader=GLContextInitializer.shaderLoader.load("specific/blur");
 		fbo2=new FrameBuffer(0);
 	}
@@ -42,7 +40,7 @@ public class BloomHandler {
 			glClearColor(1,0,1,1);
 			glClear(GL_COLOR_BUFFER_BIT);
 			glDisable(GL_DEPTH_TEST);
-			screen.render();
+			GLContextInitializer.defaultScreen.render();
 			glEnable(GL_DEPTH_TEST);
 			horizontal=!horizontal;
 		}

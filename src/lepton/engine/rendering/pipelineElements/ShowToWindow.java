@@ -11,40 +11,10 @@ import lepton.engine.rendering.pipelines.RenderPipelineElement;
 public class ShowToWindow extends RenderPipelineElement {
 	private int ms;
 	private int format;
-	public ShowToWindow(String name, byte status, int ms, int format) {
-		super(name, status);
+	public ShowToWindow(String name, int ms, int format) {
+		super(name);
 		this.ms=ms;
 		this.format=format;
-	}
-
-	@Override
-	public String[] inputNames_back() {
-		return null;
-	}
-
-	@Override
-	public String[] outputNames_back() {
-		return null;
-	}
-
-	@Override
-	public int inputMS() {
-		return ms;
-	}
-
-	@Override
-	public int outputMS() {
-		return 0;
-	}
-
-	@Override
-	public int inputFormat() {
-		return format;
-	}
-
-	@Override
-	public int outputFormat() {
-		return GL15.GL_RGBA8;
 	}
 
 	@Override
@@ -55,7 +25,7 @@ public class ShowToWindow extends RenderPipelineElement {
 		screen_basic.bind();
 		FrameBuffer.unbind_all();
 		GL15.glDisable(GL15.GL_DEPTH_TEST);
-		getInputs().bindTexture(0);
+		getBuffer().bindTexture(0);
 		GLContextInitializer.defaultScreen.render();
 		GL15.glEnable(GL15.GL_DEPTH_TEST);
 		GLFW.glfwSwapBuffers(GLContextInitializer.win);
@@ -63,9 +33,29 @@ public class ShowToWindow extends RenderPipelineElement {
 
 	@Override
 	public void init_back() {
-		//No init needed
+
 	}
-	@Override public boolean onebuffer() {
+
+	@Override
+	public String[] compNames_back() {
+		return null;
+	}
+
+	@Override
+	public int MS() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int format() {
+		// TODO Auto-generated method stub
+		return GL15.GL_RGBA8;
+	}
+
+	@Override
+	public boolean safeElement() {
+		// TODO Auto-generated method stub
 		return true;
 	}
 }

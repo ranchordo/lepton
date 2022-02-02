@@ -2,7 +2,7 @@ package lepton.engine.rendering.pipelineElements;
 
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GL15;
 
 import lepton.cpshlib.ComputeShader;
 import lepton.engine.rendering.pipelines.RenderPipelineElement;
@@ -16,51 +16,16 @@ public class GenericCPSHDispatch extends RenderPipelineElement {
 	private ComputeShader cpsh;
 	private int format;
 	private int dx, dy, dz;
-	public GenericCPSHDispatch(String name, byte status, ComputeShader c, int format, int dimX, int dimY, int dimZ) {
-		super(name, status);
+	public GenericCPSHDispatch(String name, ComputeShader c, int format, int dimX, int dimY, int dimZ) {
+		super(name);
 		cpsh=c;
 		this.format=format;
 		this.dx=dimX; this.dy=dimY; this.dz=dimZ;
 	}
-
-	@Override
-	public String[] inputNames_back() {
-		return null;
-	}
-
-	@Override
-	public String[] outputNames_back() {
-		return null;
-	}
-
-	@Override
-	public int inputMS() {
-		return 0;
-	}
-
-	@Override
-	public int outputMS() {
-		return 0;
-	}
-
-	@Override
-	public int inputFormat() {
-		return format;
-	}
-
-	@Override
-	public int outputFormat() {
-		return format;
-	}
 	
 	@Override
-	public boolean onebuffer() {
-		return true;
-	}
-
-	@Override
 	public void run_back() {
-		getInputs().bindImage(0);
+		getBuffer().bindImage(0);
 		cpsh.bind();
 		for(DefaultUniformRoutine r : uniformRoutines) {
 			r.run(cpsh);
@@ -72,6 +37,27 @@ public class GenericCPSHDispatch extends RenderPipelineElement {
 	@Override
 	public void init_back() {
 		//No init needed
+	}
+
+	@Override
+	public String[] compNames_back() {
+		return null;
+	}
+
+	@Override
+	public int MS() {
+		return 0;
+	}
+
+	@Override
+	public int format() {
+		return GL15.GL_RGBA8;
+	}
+
+	@Override
+	public boolean safeElement() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

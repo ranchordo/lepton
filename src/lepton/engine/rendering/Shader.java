@@ -19,14 +19,6 @@ public class Shader extends ShaderDataCompatible {
 	public static HashMap<String, Integer> defaults=new HashMap<String, Integer>();
 	public static void defaultInit() {
 		Texture.addRequiredUniformDefaults(defaults);
-		defaults.put("screen",0);
-		defaults.put("bloom",1);
-		defaults.put("ssao",2);
-		defaults.put("ssaoMul",3);
-
-		defaults.put("iPosition",0);
-		defaults.put("iNormal",1);
-		defaults.put("iNoise",2);
 		defaultsInited=true;
 	}
 	private static void printShaderError(String fname, String ext, int prog) {
@@ -107,9 +99,9 @@ public class Shader extends ShaderDataCompatible {
 		adrt();
 	}
 	public void bind() {
-		if(GLContextInitializer.activeShader==this) {
-			return;
-		}
+//		if(GLContextInitializer.activeShader==this) {
+//			return;
+//		}
 		if(!defaultsInited) {defaultInit();}
 		glUseProgram(program);
 		GLContextInitializer.activeShader=this;
@@ -118,6 +110,14 @@ public class Shader extends ShaderDataCompatible {
 			if(loc!=-1) {glUniform1i(loc,e.getValue());}
 		}
 		Lighting.apply();
+	}
+	/**
+	 * Utility: set the int values of the samplers "sampler0, sampler1, ..., sampler(n-1)" to 0,1,...,n-1
+	 */
+	public void setSamplersDefault(int n) {
+		for(int i=0;i<n;i++) {
+			setUniform1i("sampler"+i,i);
+		}
 	}
 	private String readFile(String fname) {
 		String ret=readFile_ret(fname);
