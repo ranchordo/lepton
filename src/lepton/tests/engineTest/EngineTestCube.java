@@ -45,7 +45,7 @@ public class EngineTestCube {
 		this.origin=origin;
 		this.quat=quat;
 		this.particleSystem=new DefaultParticleSystem(3000,200);
-		this.internalLight=new Light(Light.LIGHT_POSITION,0,0,0,5,0,5,1);
+		this.internalLight=new Light(Light.LIGHT_POSITION,0,0,0,2,0,2,1);
 	}
 	public void initPhysics() {
 		this.geo.p.mass=2.7f*0.642f*6.0f*(float)Math.pow(side_len*100.0f,2)*0.001f;

@@ -75,7 +75,7 @@ void main() {
 		vec3 pixnorm=texture2D(sampler2,pixel2UV(pixel)).xyz;
 		vec3 viewpos=(world2view*vec4(worldpos,1)).xyz;
 		dist=viewpos.z-z;
-		stillokay=stillokay&&(abs(dist-pdist)<0.8 || pdist==0);
+		stillokay=stillokay&&(abs(dist-pdist)<(max(0.8,1.1*abs(zperstep))) || pdist==0);
 		newhit=((viewpos.z>(z+epsilon)) && (length(worldpos)>epsilon || length(pixnorm)>epsilon));
 		newhit=newhit&&stillokay;
 		hitpixel=hitpixel+int(newhit || hit)*(pixel-hitpixel);

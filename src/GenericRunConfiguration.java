@@ -3,6 +3,7 @@ import java.lang.reflect.Method;
 
 import lepton.engine.rendering.GLContextInitializer;
 import lepton.tests.CPSHLibSSBOTest;
+import lepton.tests.FancyGraphicsTest;
 import lepton.tests.ObjPoolLibTest;
 import lepton.tests.TensorLibTest;
 import lepton.tests.engineTest.EngineTest;
@@ -15,7 +16,7 @@ import lepton.util.console.ConsoleWindow;
  * Generic run configuration for packaging as runnable jar: Includes the self-testing utility.
  */
 public class GenericRunConfiguration {
-	private static Class<?>[] configs=new Class[] {CPSHLibSSBOTest.class, ObjPoolLibTest.class, TensorLibTest.class, EngineTest.class};
+	private static Class<?>[] configs=new Class[] {CPSHLibSSBOTest.class, ObjPoolLibTest.class, TensorLibTest.class, FancyGraphicsTest.class, EngineTest.class};
 	private static String[] configNames=new String[configs.length];
 	private static volatile short commandIssued=-2;
 	private static final String base_command="run-config";

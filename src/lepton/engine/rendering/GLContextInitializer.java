@@ -94,6 +94,7 @@ public class GLContextInitializer {
 	public static void cleanAllRemainingGLData() {
 		Deletable.getDRT().deleteAll();
 		//Delete misc data
+		shaderLoader.shaders.clear();
 		Lighting.delete();
 	}
 	public static void resetGlobalState() {

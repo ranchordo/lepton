@@ -3,17 +3,64 @@ package lepton.engine.rendering.lighting;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import javax.vecmath.AxisAngle4f;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Quat4f;
+import javax.vecmath.Vector3f;
+
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GL44;
 
+import com.bulletphysics.linearmath.Transform;
+
 import lepton.cpshlib.ShaderDataCompatible;
 import lepton.engine.rendering.GLContextInitializer;
+import lepton.engine.rendering.GObject;
+import lepton.engine.util.GenericCubeFactory;
+import lepton.optim.objpoollib.DefaultVecmathPools;
+import lepton.optim.objpoollib.PoolElement;
+import lepton.util.LeptonUtil;
 import lepton.util.advancedLogger.Logger;
 
 /**
  * Manage lighting data
  */
 public class Lighting {
+	private static GObject genericCube=null;
+	private static Transform positionTransform;
+	private static Matrix4f ptmat;
+	private static Quat4f norot=LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,0));
+	public static void startDebugRendering() {
+		positionTransform=new Transform();
+		genericCube=GenericCubeFactory.createGenericCube();
+		genericCube.wireframe=true;
+		ptmat=new Matrix4f();
+	}
+	public static void renderDebug() {
+		if(genericCube==null) {
+			Logger.log(3,"Lighting.renderDebug: Start debug rendering before trying a debug render.");
+			return;
+		}
+		GL43.glDisable(GL43.GL_DEPTH_TEST);
+		for(Light l : lights) {
+			if(l.type==Light.LIGHT_POSITION) {
+				PoolElement<Vector3f> pe1=DefaultVecmathPools.vector3f.alloc();
+				PoolElement<Vector3f> pe2=DefaultVecmathPools.vector3f.alloc();
+				pe1.o().set(l.prop);
+				pe2.o().set(l.intensity.x,l.intensity.y,l.intensity.z);
+				ptmat.set(norot,pe1.o(),1.02f-(float)Math.exp(-0.1*pe2.o().length()));
+				positionTransform.set(ptmat);
+				pe1.free();
+				pe2.free();
+				genericCube.setColor(Math.min(l.intensity.x,1),
+						Math.min(l.intensity.y,1),
+						Math.min(l.intensity.z,1));
+				genericCube.copyData(GObject.COLOR_DATA,GL43.GL_STATIC_DRAW);
+				genericCube.highRender_customTransform(positionTransform);
+			}
+		}
+		GL43.glEnable(GL43.GL_DEPTH_TEST);
+	}
 	public static final int MAX_LIGHTS=50;
 	private static ArrayList<Light> lights=new ArrayList<Light>();
 
@@ -53,6 +100,7 @@ public class Lighting {
 			firstSSBO=0;
 			firstSSBOInitialized=false;
 		}
+		lights.clear();
 	}
 	private static void createInitialBuffer() {
 		firstSSBO=GL43.glGenBuffers();

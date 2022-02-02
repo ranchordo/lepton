@@ -92,6 +92,7 @@ public class EngineTest {
 		CleanupTasks.add(()->GLContextInitializer.cleanAllRemainingGLData());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
 		CleanupTasks.add(()->Audio.cleanUp()); //----------IMPORTANT----------//
+		GLContextInitializer.cleanAllRemainingGLData();
 		
 		
 		ConsoleWindow mainConsoleWindow=new ConsoleWindow(false,640,480,"Engine test console",(s)->recieveCommand(s),"Engine test console ready.\nStarting engine test.");
@@ -112,7 +113,7 @@ public class EngineTest {
 		FrameBuffer interfbo=new FrameBuffer(0,2,GL_RGBA16F);
 		FrameBuffer interfbo2=new FrameBuffer(0,2,GL_RGBA16F);
 		FrameBuffer interfbo3=new FrameBuffer(0,1,GL_RGBA16F);
-		float exposure=9.0f;
+		float exposure=6.0f;
 		float gamma=1.0f;
 		float bloom_thshld=0.8f;
 		int bloom_iterations=10;
@@ -134,7 +135,7 @@ public class EngineTest {
 		floor.geo.g.zombify();
 		cube.geo.g.zombify();
 		
-		float amb=0.02f;
+		float amb=0.008f;
 		Matrix4f t=new Matrix4f(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,20),1);
 		t.invert();
 		GLContextInitializer.cameraTransform=new Transform(t);

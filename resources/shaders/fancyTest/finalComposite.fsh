@@ -4,6 +4,9 @@ layout (location = 0) out vec4 FragColor;
 
 in vec2 texcoords;
 
+uniform float exposure=1;
+uniform float gamma=1;
+
 #define MAXCOLOR 15.0
 #define COLORS 16.0
 #define WIDTH 256.0
@@ -15,8 +18,10 @@ uniform sampler2D sampler2;
 void main() {
 	vec3 img=texture2D(sampler0,texcoords).xyz;
 	vec3 bloom=texture2D(sampler1,texcoords).xyz;
-	vec3 col=min(img+bloom,1.0);
-	FragColor=vec4(col,1);
+	vec3 col=max(img+bloom,0.0);
+	vec3 mapped=vec3(1.0)-exp(-col*exposure);
+	col=pow(mapped,vec3(1.0/gamma));
+	col=min(col,1);
 	float cell=col.b*MAXCOLOR;
 	float cell_l=floor(cell);
 	float cell_h=ceil(cell);

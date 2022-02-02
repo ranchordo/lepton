@@ -25,6 +25,7 @@ public class CPSHLibSSBOTest {
 		Logger.setCleanupTask(()->CleanupTasks.cleanUp());
 		CleanupTasks.add(()->GLContextInitializer.cleanAllRemainingGLData());
 		CleanupTasks.add(()->GLContextInitializer.destroyGLContext());
+		GLContextInitializer.cleanAllRemainingGLData();
 		GLContextInitializer.initializeGLContext(true,500,500,false,"CPSHLIB initialization and GPU driver allocation test");
 		
 		ComputeShader ballInitializer=new ComputeShader("cpshlibtest/ballInitializer");
