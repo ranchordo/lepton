@@ -99,7 +99,7 @@ public class EngineTest {
 		mainConsoleWindow.setVisible(true); //Console windows aren't required. Disable this one by deleting this whole group of lines.
 		LogHandler consoleWindowHandler=new ConsoleWindowHandler(mainConsoleWindow);
 		Logger.handlers.add(consoleWindowHandler);
-		CleanupTasks.add(()->{if(LogLevel.isFatal()) {mainConsoleWindow.waitForClose();}}); //Wait for the console window to close if a fatal error lead to an exit
+		//CleanupTasks.add(()->{if(LogLevel.isFatal()) {mainConsoleWindow.waitForClose();}}); //Wait for the console window to close if a fatal error lead to an exit
 		CleanupTasks.add(()->mainConsoleWindow.close());
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
 		CleanupTasks.add(()->{if(LogLevel.isFatal()) {errorLog();}});
