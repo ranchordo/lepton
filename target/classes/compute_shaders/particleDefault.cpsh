@@ -1,0 +1,48 @@
+#version 430 core
+#define noise_amp 0.008
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+uniform vec3 invocation_dimensions=vec3(0);
+struct Particle {
+	vec4 p;
+	vec4 v;
+};
+layout (std140) buffer particles_buffer {
+	Particle particles[];
+};
+
+uniform vec3 origin;
+uniform int toemit;
+uniform int stindex;
+uniform float time;
+uniform float dt;
+uniform vec3 Vi;
+
+float rand(float fli) {
+    uint i=uint(fli);
+    i^=2747636419u;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    return fract(float(i)/4294967295.0);
+}
+
+void main() {
+	int particleID=int(gl_GlobalInvocationID.x+(invocation_dimensions.x*gl_GlobalInvocationID.y)+(invocation_dimensions.x*invocation_dimensions.y*gl_GlobalInvocationID.z));
+	int nparticles=int(invocation_dimensions.x*invocation_dimensions.y*invocation_dimensions.z);
+	particles[particleID].p+=particles[particleID].v*dt;
+	float tf=time*1000000.0;
+	particles[particleID].v+=noise_amp*vec4(rand(particleID+5+tf)*2-1,rand(particleID+4+tf)*2-0.3,rand(particleID+3+tf)*2-1,0);
+	particles[particleID].v-=particles[particleID].v*abs(particles[particleID].v)*0.001;
+	
+	//Handle emission:
+	int a=stindex;
+	int b=int(mod(stindex+toemit,nparticles));
+	bool reEmit=((particleID>=min(a,b)) && (particleID<max(a,b))) ^^ (b<a);
+	
+	particles[particleID].p=(int(!reEmit)*particles[particleID].p)+(int(reEmit)*vec4(origin,time));
+	particles[particleID].v=(int(!reEmit)*particles[particleID].v)+(int(reEmit)*vec4(Vi+1*vec3(rand(particleID+7)*2-1,rand(particleID+8)*2-1,rand(particleID+9)*2-1),0));
+}
