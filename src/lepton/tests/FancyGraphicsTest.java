@@ -28,8 +28,10 @@ import lepton.engine.rendering.lighting.Lighting;
 import lepton.engine.util.Generic3DObject;
 import lepton.optim.objpoollib.PoolStrainer;
 import lepton.tests.engineTest.EngineTestFloor;
+import lepton.tests.engineTest.EngineTestScreen;
 import lepton.util.CleanupTasks;
 import lepton.util.ImageUtil;
+import lepton.util.InputHandler;
 import lepton.util.LeptonUtil;
 import lepton.util.TimeProfiler;
 import lepton.util.advancedLogger.LogHandler;
@@ -80,7 +82,8 @@ public class FancyGraphicsTest {
 		CleanupTasks.add(()->Logger.handlers.remove(consoleWindowHandler));
 		CleanupTasks.add(()->{if(LogLevel.isFatal()) {errorLog();}});
 		
-		GLContextInitializer.initializeGLContext(true,1280,720,false,"Graphics settings: 2147483647%");
+		GLContextInitializer.initializeGLContext(true,1024,576,false,"Graphics settings: 2147483647%");
+		InputHandler h=new InputHandler(GLContextInitializer.win);
 		
 		Shader finalComposite=new Shader("fancyTest/finalComposite");
 		Shader clear=new Shader("fancyTest/clear");
@@ -90,9 +93,10 @@ public class FancyGraphicsTest {
 		FrameBuffer deferredout=new FrameBuffer(16,2,GL_RGBA16F);
 		FrameBuffer noms=new FrameBuffer(0,4,GL_RGBA16F);
 		FrameBuffer blur=new FrameBuffer(0,1,GL_RGBA16F);
-		float exposure=2.5f;
+		
+		float exposure=2.9f;
 		float gamma=0.6f;
-		float bloom_thshld=1.6f;
+		float bloom_thshld=0.7f;
 		int bloom_iterations=10;
 		
 		physics.EXPOSE_COLLISION_DATA=true;
@@ -113,6 +117,8 @@ public class FancyGraphicsTest {
 		GLContextInitializer.defaultMainShader=new Shader("main_engineTest");
 		
 		glfwSwapInterval(0);
+		
+		TimeProfiler tp=new TimeProfiler(new String[] {"Misc","Main render","Lighting","Bloom blur","SSR","Direct render","Final composite","glFinish"});
 		
 		EngineTestFloor floor=new EngineTestFloor(new Vector3f(0,-10,0),LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,(float)Math.toRadians(-90))));
 		floor.shape.set(14,14,1);
@@ -136,6 +142,14 @@ public class FancyGraphicsTest {
 		cube.geo.g.useNegativeLightingValue=true;
 		cube.geo.g.useTex=true;
 		cube.geo.g.zombify();
+		
+		
+		EngineTestScreen screen=new EngineTestScreen();
+		screen.fonts=fonts;
+		screen.timeprofiler=tp;
+		screen.showMovementInstructions=false;
+		screen.init();
+		
 		
 		Generic3DObject pillarbutton1=new Generic3DObject(new Vector3f(-9,-9,-1),LeptonUtil.AxisAngle_np(new AxisAngle4f(0,1,0,(float)Math.toRadians(90))),1,GLContextInitializer.shaderLoader.load("fancyTest/gbuf"),"fancytest/pillarbutton integrated");
 		pillarbutton1.objSpaceLights.add(new Light(Light.LIGHT_POSITION,0,2.7f,0, cubelight*2,0,0, 1));
@@ -198,7 +212,7 @@ public class FancyGraphicsTest {
 			Logger.log(4,e.toString(),e);
 		}
 		int fcc=0;
-		TimeProfiler tp=new TimeProfiler(new String[] {"Misc","Main render","Lighting","Bloom blur","SSR","Direct render","Final composite","glFinish"});
+		boolean showDebugScreen=false;
 		
 		Logger.log(0,"Initialization done. Ready for main loop.");
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
@@ -212,10 +226,14 @@ public class FancyGraphicsTest {
 				glfwSetWindowShouldClose(GLContextInitializer.win,true);
 			}
 			
-			//Moving camera
+			//Moving camera / other misc logic
 			t.set(LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,-0.1f)),new Vector3f(0,-6,5-((fcc/500.0f)%8.4f)),1);
 			t.invert();
 			GLContextInitializer.cameraTransform.set(t);
+			if(h.ir(GLFW_KEY_F3)) {
+				showDebugScreen=!showDebugScreen;
+			}
+			
 			
 			//Just clear the stuff
 			noms.bind();
@@ -312,8 +330,13 @@ public class FancyGraphicsTest {
 			finalComposite.setSamplersDefault(3);
 			noms.unbind();
 			GLContextInitializer.defaultScreen.render();
+			if(showDebugScreen) {
+				screen.logic();
+				screen.render();
+			}
 			tp.stop(6);
 			//Done rendering
+			
 			fcc++;
 			if(fcc%500==0) {
 				Logger.log(Logger.no_prefix,"Running at "+GLContextInitializer.fr+"fps");

@@ -178,8 +178,6 @@ public class EngineTest {
 			glFinish();
 			timeProfiler.stop(1);
 			timeProfiler.start(4);
-			debugScreen.logic();
-			debugScreen.render();
 			glFinish();
 			//System.out.println(GLContextInitializer.fr);
 			timeProfiler.stop(4);
@@ -209,6 +207,8 @@ public class EngineTest {
 			interfbo2.bindTexture(0,0);
 			interfbo3.bindTexture(0,1);
 			blindfold.render();
+			debugScreen.logic();
+			debugScreen.render();
 			glEnable(GL_DEPTH_TEST);
 			glFinish();
 			timeProfiler.stop(2);

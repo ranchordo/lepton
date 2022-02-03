@@ -36,7 +36,7 @@ public class PieChart extends Tile2d {
 //			r.renderingShader=pieChartShader;
 			r.objectSize=GenericInstancedTile2d.defaultObjectSize+8;
 			tog=!tog;
-			int c=Color.HSBtoRGB(i*(1.0f/data.length),tog?1:0.90f,tog?0.3f:1);
+			int c=Color.HSBtoRGB(i*(1.0f/data.length),tog?1:0.90f,tog?0.90f:1);
 			rgbs[i]=new Vector3f(((c>>0)&0xFF)/255.0f,((c>>8)&0xFF)/255.0f,((c>>16)&0xFF)/255.0f);
 			r.setParent(parent);
 			r.setPosMode(posMode);
