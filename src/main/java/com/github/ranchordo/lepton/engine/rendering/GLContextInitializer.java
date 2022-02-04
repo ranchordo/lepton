@@ -133,6 +133,9 @@ public class GLContextInitializer {
 			Logger.log(3,"GLFW init error.");
 		}
 		GLFWVidMode d=glfwGetVideoMode(glfwGetPrimaryMonitor());
+		if(d==null) {
+			Logger.log(4,"Null video mode.");
+		}
 		fullscreen&=showWindow; //DO NOT DELETE THIS WHATEVER YOU DO
 		if(fullscreen) {
 			winW=d.width();
