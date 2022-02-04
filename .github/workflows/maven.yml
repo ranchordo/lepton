@@ -19,6 +19,8 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+    - name: Install mesa stuff
+      run: sudo add-apt-repository ppa:kisak/kisak-mesa && sudo apt update && sudo apt upgrade
     - name: Install stuff
       run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils
     - name: Start pulseaudio
