@@ -8,8 +8,6 @@ com.github.ranchordo.lepton.engine.physics
 com.github.ranchordo.lepton.engine.rendering
 com.github.ranchordo.lepton.engine.rendering.instanced
 com.github.ranchordo.lepton.engine.rendering.lighting
-com.github.ranchordo.lepton.engine.rendering.pipelineElements
-com.github.ranchordo.lepton.engine.rendering.pipelines
 com.github.ranchordo.lepton.engine.util
 com.github.ranchordo.lepton.optim.objpoollib
 com.github.ranchordo.lepton.optim.tensorlib.main
