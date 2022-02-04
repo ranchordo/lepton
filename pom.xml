@@ -1,199 +1,190 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.github.ranchordo</groupId>
   <artifactId>com.github.ranchordo.lepton</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-
   <name>com.github.ranchordo.lepton</name>
   <url>https://github.com/ranchordo/lepton</url>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-	<lwjgl.version>3.3.0</lwjgl.version>
+    <lwjgl.version>3.3.0</lwjgl.version>
   </properties>
-
   <profiles>
-	<profile>
-		<id>lwjgl-natives-linux-amd64</id>
-		<activation>
-			<os>
-				<family>unix</family>
-				<arch>amd64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-linux</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-linux-aarch64</id>
-		<activation>
-			<os>
-				<family>unix</family>
-				<arch>aarch64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-linux-arm64</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-linux-arm</id>
-		<activation>
-			<os>
-				<family>unix</family>
-				<arch>arm</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-linux-arm32</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-linux-arm32</id>
-		<activation>
-			<os>
-				<family>unix</family>
-				<arch>arm32</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-linux-arm32</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-macos-amd64</id>
-		<activation>
-			<os>
-				<family>mac</family>
-				<arch>amd64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-macos</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-macos-aarch64</id>
-		<activation>
-			<os>
-				<family>mac</family>
-				<arch>aarch64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-macos-arm64</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-windows-amd64</id>
-		<activation>
-			<os>
-				<family>windows</family>
-				<arch>amd64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-windows</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-windows-x86</id>
-		<activation>
-			<os>
-				<family>windows</family>
-				<arch>x86</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-windows-x86</lwjgl.natives>
-		</properties>
-	</profile>
-	<profile>
-		<id>lwjgl-natives-windows-aarch64</id>
-		<activation>
-			<os>
-				<family>windows</family>
-				<arch>aarch64</arch>
-			</os>
-		</activation>
-		<properties>
-			<lwjgl.natives>natives-windows-arm64</lwjgl.natives>
-		</properties>
-	</profile>
-</profiles>
-
-<dependencyManagement>
-	<dependencies>
-		<dependency>
-			<groupId>org.lwjgl</groupId>
-			<artifactId>lwjgl-bom</artifactId>
-			<version>${lwjgl.version}</version>
-			<scope>import</scope>
-			<type>pom</type>
-		</dependency>
-	</dependencies>
-</dependencyManagement>
-
-<dependencies>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-glfw</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-openal</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-opengl</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-stb</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl</artifactId>
-		<classifier>${lwjgl.natives}</classifier>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-glfw</artifactId>
-		<classifier>${lwjgl.natives}</classifier>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-openal</artifactId>
-		<classifier>${lwjgl.natives}</classifier>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-opengl</artifactId>
-		<classifier>${lwjgl.natives}</classifier>
-	</dependency>
-	<dependency>
-		<groupId>org.lwjgl</groupId>
-		<artifactId>lwjgl-stb</artifactId>
-		<classifier>${lwjgl.natives}</classifier>
-	</dependency>
+    <profile>
+      <id>lwjgl-natives-linux-amd64</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-linux-aarch64</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux-arm64</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-linux-arm</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>arm</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-linux-arm32</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <arch>arm32</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux-arm32</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-macos-amd64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-macos-aarch64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-windows-amd64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-windows</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-windows-x86</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>x86</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-windows-x86</lwjgl.natives>
+      </properties>
+    </profile>
+    <profile>
+      <id>lwjgl-natives-windows-aarch64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-windows-arm64</lwjgl.natives>
+      </properties>
+    </profile>
+  </profiles>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.lwjgl</groupId>
+        <artifactId>lwjgl-bom</artifactId>
+        <version>${lwjgl.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
     <dependency>
-	    <groupId>cz.advel.jbullet</groupId>
-	    <artifactId>jbullet</artifactId>
-    	<version>20101010</version>
-	</dependency>
-</dependencies>
-
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-glfw</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-openal</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-opengl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-stb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-glfw</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-openal</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-opengl</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.lwjgl</groupId>
+      <artifactId>lwjgl-stb</artifactId>
+      <classifier>${lwjgl.natives}</classifier>
+    </dependency>
+    <dependency>
+      <groupId>cz.advel.jbullet</groupId>
+      <artifactId>jbullet</artifactId>
+      <version>20101010</version>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
       <plugin>
@@ -202,14 +193,58 @@
         <version>3.3.1</version>
         <configuration>
           <notimestamp>true</notimestamp>
-          <outputDirectory>${project.build.directory}/docs</outputDirectory>
-          <reportOutputDirectory>${project.reporting.outputDirectory}/docs</reportOutputDirectory>
+          <outputDirectory>${basedir}/docs</outputDirectory>
+		  <destDir>docs</destDir>
+          <reportOutputDirectory>${basedir}/docs</reportOutputDirectory>
           <show>public</show>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.github.ranchordo.lepton.GenericRunConfiguration</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>resources/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
- 
   <reporting>
     <plugins>
       <plugin>
@@ -218,12 +253,12 @@
         <version>3.3.1</version>
         <configuration>
           <notimestamp>true</notimestamp>
-          <outputDirectory>${project.build.directory}/docs</outputDirectory>
-          <reportOutputDirectory>${project.reporting.outputDirectory}/docs</reportOutputDirectory>
+          <outputDirectory>${basedir}/docs</outputDirectory>
+		  <destDir>docs</destDir>
+          <reportOutputDirectory>${basedir}/docs</reportOutputDirectory>
           <show>public</show>
         </configuration>
       </plugin>
     </plugins>
   </reporting>
-
 </project>

@@ -9,14 +9,14 @@
 -source
 '11'
 -sourcepath
-'C:/Users/Ray/eclipse-workspace/com.github.ranchordo.lepton/src/main/java'
+'C:/Users/Ray/eclipse-workspace/com.github.ranchordo.lepton/src/main/java;C:/Users/Ray/eclipse-workspace/com.github.ranchordo.lepton/resources'
 -author
 -bottom
 'Copyright &#169; 2022. All rights reserved.'
 -charset
 'UTF-8'
 -d
-'C:/Users/Ray/eclipse-workspace/com.github.ranchordo.lepton/target/site/docs/apidocs'
+'C:/Users/Ray/eclipse-workspace/com.github.ranchordo.lepton/docs'
 -docencoding
 'UTF-8'
 -doctitle
@@ -166,24 +166,30 @@ C:\Users\Ray\.m2\repository\java3d\vecmath\1.3.1\vecmath-1.3.1.jar = 16439300036
 C:\Users\Ray\.m2\repository\asm\asm-all\3.1\asm-all-3.1.jar = 1643930004082
 C:\Users\Ray\.m2\repository\ant\ant\1.6.5\ant-1.6.5.jar = 1643930004472
 C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\src\main\java = 1643930667829
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\allclasses-index.html = 1643932212372
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\allclasses.html = 1643932212385
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\allpackages-index.html = 1643932212374
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\constant-values.html = 1643932211887
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\deprecated-list.html = 1643932212380
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\element-list = 1643932211776
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\help-doc.html = 1643932212406
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\index-all.html = 1643932212362
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\index.html = 1643932212391
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\member-search-index.js = 1643932212355
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\member-search-index.zip = 1643932212357
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\overview-summary.html = 1643932212404
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\overview-tree.html = 1643932212280
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\package-search-index.js = 1643932212347
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\package-search-index.zip = 1643932212350
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\script.js = 1643932212410
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\search.js = 1643932212412
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\serialized-form.html = 1643932211902
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\stylesheet.css = 1643932212409
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\type-search-index.js = 1643932212351
-C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\target\site\docs\apidocs\type-search-index.zip = 1643932212352
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources\consolas.png = 1641661890766
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources\engineTest-clank.ogg = 1641661890767
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources\engineTest-cropped_border.jpg = 1641661890768
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources\engineTest-cropped_border_normal_detail.jpg = 1641661890769
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources\lut.png = 1643662437791
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\resources = 1643930667782
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\allclasses-index.html = 1643934001523
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\allclasses.html = 1643934001533
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\allpackages-index.html = 1643934001526
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\constant-values.html = 1643934001192
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\deprecated-list.html = 1643934001530
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\element-list = 1643934001111
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\help-doc.html = 1643934001550
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\index-all.html = 1643934001515
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\index.html = 1643934001538
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\member-search-index.js = 1643934001508
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\member-search-index.zip = 1643934001510
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\overview-summary.html = 1643934001548
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\overview-tree.html = 1643934001448
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\package-search-index.js = 1643934001502
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\package-search-index.zip = 1643934001504
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\script.js = 1643934001554
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\search.js = 1643934001555
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\serialized-form.html = 1643934001198
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\stylesheet.css = 1643934001552
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\type-search-index.js = 1643934001505
+C:\Users\Ray\eclipse-workspace\com.github.ranchordo.lepton\docs\type-search-index.zip = 1643934001506
