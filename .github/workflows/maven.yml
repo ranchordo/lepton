@@ -28,6 +28,6 @@ jobs:
     - name: Create and set virtual sink
       run: pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink
     - name: Restart pulseaudio
-      run: pulseaudio -k && pulseaudio -D && pacmd list-sinks && pacmd set-default-sink VirtualSink
+      run: pulseaudio -k && pulseaudio -D && pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink && pacmd list-sinks
     - name: Build with Maven
       run: xvfb-run mvn -B verify --file pom.xml
