@@ -18,6 +18,6 @@ in float instanceID;
 uniform sampler2D tex;
 void main() {
 	Info info=infos[int(instanceID)];
-	float c=texture2D(tex,texcoords).w;
+	float c=texture(tex,texcoords).w;
 	FragColor=vec4(info.colinfo.xyz,c);
 }	

@@ -24,10 +24,10 @@ ivec2 UV2pixel(vec2 uv) {
 	return ivec2(windowpixels*uv);
 }
 void main() {
-	vec3 hdr=texture2D(sampler0,texcoords).xyz;
-	vec3 pos=texture2D(sampler1,texcoords).xyz;
-	vec3 norm=texture2D(sampler2,texcoords).xyz;
-	vec3 specinfo=texture2D(sampler3,texcoords).xyz;
+	vec3 hdr=texture(sampler0,texcoords).xyz;
+	vec3 pos=texture(sampler1,texcoords).xyz;
+	vec3 norm=texture(sampler2,texcoords).xyz;
+	vec3 specinfo=texture(sampler3,texcoords).xyz;
 	
 	vec4 viewfrag=world2view*vec4(pos,1);
 	vec3 viewnorm=mat3(world2view)*norm;
@@ -71,8 +71,8 @@ void main() {
 		pixel+=pixstep*mult;
 		divisor+=int(hit)*2;
 		z+=zperstep*mult;
-		vec3 worldpos=texture2D(sampler1,pixel2UV(pixel)).xyz;
-		vec3 pixnorm=texture2D(sampler2,pixel2UV(pixel)).xyz;
+		vec3 worldpos=texture(sampler1,pixel2UV(pixel)).xyz;
+		vec3 pixnorm=texture(sampler2,pixel2UV(pixel)).xyz;
 		vec3 viewpos=(world2view*vec4(worldpos,1)).xyz;
 		dist=viewpos.z-z;
 		stillokay=stillokay&&(abs(dist-pdist)<(max(0.8,5*abs(zperstep))) || pdist==0);
@@ -87,5 +87,5 @@ void main() {
 	hit=hit&&(specinfo.y>0.5);
 	vec2 mag=pixstep/STEPLEN;
 	mag=max(mag,0);
-	FragColor=vec4(((1-ssrmix)+ssrmix*int(!hit))*hdr+int(hit)*hdr*texture2D(sampler0,pixel2UV(hitpixel)).xyz,1);
+	FragColor=vec4(((1-ssrmix)+ssrmix*int(!hit))*hdr+int(hit)*hdr*texture(sampler0,pixel2UV(hitpixel)).xyz,1);
 }	

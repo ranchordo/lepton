@@ -16,8 +16,8 @@ uniform sampler2D sampler0;
 uniform sampler2D sampler1;
 uniform sampler2D sampler2;
 void main() {
-	vec3 img=texture2D(sampler0,texcoords).xyz;
-	vec3 bloom=texture2D(sampler1,texcoords).xyz;
+	vec3 img=texture(sampler0,texcoords).xyz;
+	vec3 bloom=texture(sampler1,texcoords).xyz;
 	vec3 col=max(img+bloom,0.0);
 	vec3 mapped=vec3(1.0)-exp(-col*exposure);
 	col=pow(mapped,vec3(1.0/gamma));
@@ -31,7 +31,7 @@ void main() {
 	float y_offset=half_px_y+col.g*(MAXCOLOR/COLORS);
 	vec2 lut_pos_l=vec2(cell_l/COLORS+x_offset,1-y_offset);
 	vec2 lut_pos_h=vec2(cell_h/COLORS+x_offset,1-y_offset);
-	vec4 grcol_l=texture2D(sampler2,lut_pos_l);
-	vec4 grcol_h=texture2D(sampler2,lut_pos_h);
+	vec4 grcol_l=texture(sampler2,lut_pos_l);
+	vec4 grcol_h=texture(sampler2,lut_pos_h);
 	FragColor=mix(grcol_l,grcol_h,fract(cell));
 }	

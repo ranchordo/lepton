@@ -38,7 +38,7 @@ uniform sampler2D specular;
 void main() {
 	vec3 norm=normalize(normal_orig);
 	if((textureUse&2)>0) {
-		vec3 normal_tex=texture2D(normal,texCoords).xyz;
+		vec3 normal_tex=texture(normal,texCoords).xyz;
 		normal_tex=normal_tex*2.0 - 1.0;
 		normal_tex=vec3(-normal_tex.x,normal_tex.y,normal_tex.z);
 		norm=normalize(TBN * normal_tex);
@@ -49,13 +49,13 @@ void main() {
 	float usel=0;
 	float roughness=material_v.y;
 	if((textureUse&4)>0) {
-		vec4 t=texture2D(specular,texCoords);
+		vec4 t=texture(specular,texCoords);
 		spec=t.x;
 		usel=t.z;
 	}
 	vec4 fcol=col;
 	if((textureUse&1)>0) {
-		fcol*=texture2D(albedo,texCoords);
+		fcol*=texture(albedo,texCoords);
 	}
 	
 	pAlbedo=fcol;

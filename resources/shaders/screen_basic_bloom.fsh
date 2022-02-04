@@ -8,7 +8,7 @@ in vec2 texcoords;
 uniform sampler2D screen;
 uniform float bloom_thshld=1.0;
 void main() {
-	vec3 hdr=texture2D(screen,texcoords).xyz;
+	vec3 hdr=texture(screen,texcoords).xyz;
 	FragColor=vec4(hdr,1);
 	float brightness = dot(hdr, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > bloom_thshld) {

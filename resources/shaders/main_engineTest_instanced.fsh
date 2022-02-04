@@ -38,7 +38,7 @@ void main() {
 	vec4 intensity_in=intensity;
 	vec3 norm=normalize(vec3(normal_orig.x,normal_orig.y,normal_orig.z));
 	if((textureUse&2)>0) {
-		vec3 normal_tex=texture2D(normal,texCoords).xyz;
+		vec3 normal_tex=texture(normal,texCoords).xyz;
 		normal_tex=normal_tex*2.0 - 1.0;
 		normal_tex=vec3(-normal_tex.x,normal_tex.y,normal_tex.z);
 		norm=normalize(TBN * normal_tex);
@@ -80,7 +80,7 @@ void main() {
 	}
 	vec4 fcol=vec4((intensity_in * col).xyz,col.w);
 	if((textureUse&1)>0) {
-		vec4 tcol=texture2D(albedo,texCoords);
+		vec4 tcol=texture(albedo,texCoords);
 		fcol=fcol*tcol;
 	}
 	
