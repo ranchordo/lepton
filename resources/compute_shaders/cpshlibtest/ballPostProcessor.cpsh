@@ -29,7 +29,6 @@ void main() {
 	sum/=1.0+(8.0*m);
 	
 	sum*=0.998;
-	sum+=vec4(0,0,0.5,0);
 	
 	imageStore(img_output, coords.xy, sum);
 }
