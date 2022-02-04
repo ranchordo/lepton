@@ -1,6 +1,3 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
-
 name: Java CI with Maven
 
 on:
@@ -22,5 +19,17 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
+    - name: Install stuff
+      run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils
+    - name: Start pulseaudio
+      run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -D
+    - name: Restart pulseaudio
+      run: pulseaudio -k && pulseaudio -D
+    - name: Create virtual audio device
+      run: pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"
+    - name: Create and set virtual sink
+      run: pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink
+    - name: Print stuff
+      run: aplay -l && pacmd list-sinks
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml
+      run: xvfb-run mvn -B verify --file pom.xml
