@@ -195,6 +195,7 @@
           <notimestamp>true</notimestamp>
           <outputDirectory>${basedir}/docs</outputDirectory>
 		  <destDir>docs</destDir>
+		  <doctitle>Lepton documentation ${project.version}</doctitle>
           <reportOutputDirectory>${basedir}/docs</reportOutputDirectory>
           <show>public</show>
         </configuration>
@@ -255,6 +256,7 @@
           <notimestamp>true</notimestamp>
           <outputDirectory>${basedir}/docs</outputDirectory>
 		  <destDir>docs</destDir>
+		  <doctitle>Lepton documentation ${project.version}</doctitle>
           <reportOutputDirectory>${basedir}/docs</reportOutputDirectory>
           <show>public</show>
         </configuration>
