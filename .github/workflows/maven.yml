@@ -19,8 +19,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: maven
-    - name: Install XVFB
-      run: sudo apt install xvfb
+    - name: Install stuff
+      run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils
+    - name: Start pulseaudio
+      run: sudo usermod -aG pulse,pulse-access $(whoami) && pulseaudio -D
     - name: Create virtual audio device
       run: pactl load-module module-virtual-sink sink_name=VirtualAudioDevice
     - name: Build with Maven
