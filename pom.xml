@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.ranchordo</groupId>
   <artifactId>com.github.ranchordo.lepton</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>com.github.ranchordo.lepton</name>
   <url>https://github.com/ranchordo/lepton</url>
   <properties>
