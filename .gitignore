@@ -6,4 +6,4 @@
 .project
 .settings
 dependency-reduced-pom.xml
-target/maven-javadoc-plugin-stale-data.txt
+target
