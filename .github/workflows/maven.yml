@@ -22,12 +22,12 @@ jobs:
     - name: Install stuff
       run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils
     - name: Start pulseaudio
-      run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -k && sudo killall pulseaudio && pulseaudio -D && pacmd list-sinks
+      run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -D
     - name: Create virtual audio device
       run: pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"
     - name: Create and set virtual sink
       run: pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink
-    - name: Restart pulseaudio pt 2
-      run: pulseaudio -k && sudo killall pulseaudio && pulseaudio -D && pacmd list-sinks
+    - name: Restart pulseaudio
+      run: pulseaudio -k && sudo killall pulseaudio && pulseaudio -D && pacmd list-sinks && pacmd set-default-sink VirtualSink
     - name: Build with Maven
       run: xvfb-run mvn -B verify --file pom.xml
