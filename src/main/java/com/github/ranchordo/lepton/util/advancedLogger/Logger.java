@@ -13,6 +13,10 @@ public class Logger {
 	 */
 	public static LoggerFinalCleanup lfc;
 	/**
+	 * Use exceptions instead of a full system exit. Only set temporarily for tests or something
+	 */
+	public static boolean noSystemExit=false;
+	/**
 	 * For logger internal messages and errors.
 	 */
 	protected static final LogLevel logger_internal=new LogLevel("LOGGER_INTERNAL",true,false,false);

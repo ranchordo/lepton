@@ -28,7 +28,11 @@ public class LogLevel {
 			Logger.log(Logger.logger_internal,"FATAL ERROR STACK TRACE:\n"+stackTrace);
 			Logger.cleanuphandlers();
 			if(Logger.lfc!=null) {Logger.lfc.run();}
-			System.exit(exitCode);
+			if(Logger.noSystemExit) {
+				throw new RuntimeException("Logger fatal");
+			} else {
+				System.exit(exitCode);
+			}
 		}
 	}
 }

@@ -16,19 +16,13 @@ public class BloomHandler {
 	public static FrameBuffer fbo1;
 	public static FrameBuffer fbo2;
 	/**
-	 * When you change screen resolution make sure to call update();
-	 */
-	public static void update() {
-		blurShader=GLContextInitializer.shaderLoader.load("specific/blur");
-		fbo2=new FrameBuffer(0);
-	}
-	public static void init() {
-		update();
-	}
-	/**
 	 * Blurs an image
 	 */
 	public static FrameBuffer blur(FrameBuffer in, int amount) {
+		if(blurShader==null || fbo2==null) {
+			blurShader=GLContextInitializer.shaderLoader.load("specific/blur");
+			fbo2=new FrameBuffer(0);
+		}
 		boolean horizontal=true;
 		fbo1=in;
 		ShaderDataCompatible prevShader=GLContextInitializer.activeShader;

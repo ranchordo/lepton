@@ -31,7 +31,7 @@ public class EngineTestCube {
 	public static final float side_len=2f;
 	private Vector3f origin;
 	private Quat4f quat;
-	WorldObject geo;
+	public WorldObject geo;
 	
 	Soundtrack soundtrack=new Soundtrack();
 	SourcePool sourcePool=new SourcePool("EngineTestCube");

@@ -137,9 +137,9 @@ public class GLContextInitializer {
 		if(fullscreen) {
 			winW=d.width();
 			winH=d.height();
-			win=glfwCreateWindow(showWindow?winW:1,showWindow?winH:1,showWindow?windowTitle:"Lepton hidden window",glfwGetPrimaryMonitor(),0);
+			win=glfwCreateWindow(showWindow?winW:1,showWindow?winH:1,windowTitle,glfwGetPrimaryMonitor(),0);
 		} else {
-			win=glfwCreateWindow(showWindow?w:1,showWindow?h:1,showWindow?windowTitle:"Lepton hidden window",0,0);
+			win=glfwCreateWindow(showWindow?w:1,showWindow?h:1,windowTitle,0,0);
 			winW=w;
 			winH=h;
 		}
@@ -175,8 +175,6 @@ public class GLContextInitializer {
 		setFOV(90);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glViewport(0,0,winW,winH);
-		//Init handlers:
-		BloomHandler.init();
 		defaultScreen=new Screen();
 	}
 	public static void doCursor(long win, boolean grabbed, boolean hidden) {
