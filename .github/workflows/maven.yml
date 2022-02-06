@@ -26,7 +26,7 @@ jobs:
     - name: Start pulseaudio
       run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -D
     - name: Restart pulseaudio
-      run: pulseaudio -k && pulseaudio -D
+      run: pulseaudio -k && sudo pulseaudio --system -D
     - name: Create virtual audio device
       run: pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"
     - name: Create and set virtual sink
