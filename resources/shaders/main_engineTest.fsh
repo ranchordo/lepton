@@ -20,7 +20,7 @@ layout (std140) buffer lights_buffer {
 uniform int num_lights=0;
 uniform float useLighting=2;
 uniform mat4 world2view=mat4(1.0);
-uniform int Use=0;
+uniform int textureUse=0;
 
 in vec2 texCoords;
 in vec4 intensity;
@@ -36,7 +36,7 @@ uniform sampler2D normal;
 void main() {
 	vec4 intensity_in=intensity;
 	vec3 norm=normalize(vec3(normal_orig.x,normal_orig.y,normal_orig.z));
-	if((Use&2)>0) {
+	if((textureUse&2)>0) {
 		vec3 normal_tex=texture(normal,texCoords).xyz;
 		normal_tex=normal_tex*2.0 - 1.0;
 		normal_tex=vec3(-normal_tex.x,normal_tex.y,normal_tex.z);
@@ -78,7 +78,7 @@ void main() {
 		}
 	}
 	vec4 fcol=vec4((intensity_in * col).xyz,col.w);
-	if((Use&1)>0) {
+	if((textureUse&1)>0) {
 		vec4 tcol=texture(albedo,texCoords);
 		fcol=fcol*tcol;
 	}
