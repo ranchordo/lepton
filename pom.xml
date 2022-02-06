@@ -7,6 +7,7 @@
   <name>com.github.ranchordo.lepton</name>
   <description>A low-level graphics and utility framework designed to make graphics and game development easier.</description>
   <url>https://github.com/ranchordo/lepton</url>
+
   <licenses>
     <license>
       <name>BSD 3-Clause License</name>
@@ -209,12 +210,82 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+<distributionManagement>
+  <snapshotRepository>
+    <id>ossrh</id>
+    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+  </snapshotRepository>
+  <repository>
+    <id>ossrh</id>
+    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+  </repository>
+</distributionManagement>
   <build>
     <plugins>
+<plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-source-plugin</artifactId>
+      <version>2.2.1</version>
+      <executions>
+        <execution>
+          <id>attach-sources</id>
+          <goals>
+            <goal>jar-no-fork</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+<plugin>
+      <groupId>org.sonatype.plugins</groupId>
+      <artifactId>nexus-staging-maven-plugin</artifactId>
+      <version>1.6.7</version>
+      <extensions>true</extensions>
+      <configuration>
+        <serverId>ossrh</serverId>
+        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+      </configuration>
+    </plugin>
+<plugin>
+  <groupId>com.github.goldin</groupId>
+  <artifactId>copy-maven-plugin</artifactId>
+  <version>0.2.5</version>
+  <executions>
+    <execution>
+      <id>deploy-to-local-directory</id>
+      <phase>install</phase>
+      <goals>
+        <goal>copy</goal>
+      </goals>
+      <configuration>
+        <skipIdentical>false</skipIdentical>
+        <failIfNotFound>false</failIfNotFound>
+        <resources>
+          <resource>
+            <description>Copy jarfiles to dist</description>
+            <targetPath>${basedir}/dist</targetPath>
+            <directory>${project.build.directory}</directory>
+            <includes>
+              <include>*.jar</include>
+            </includes>
+          </resource>
+        </resources>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.1</version>
+<executions>
+        <execution>
+          <id>attach-javadocs</id>
+          <goals>
+            <goal>jar</goal>
+          </goals>
+        </execution>
+      </executions>
         <configuration>
           <notimestamp>true</notimestamp>
           <outputDirectory>${basedir}/docs</outputDirectory>
@@ -228,7 +299,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <outputDirectory>${basedir}/dist</outputDirectory>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
@@ -242,7 +312,6 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.2.4</version>
         <configuration>
-          <outputDirectory>${basedir}/dist</outputDirectory>
         </configuration>
         <executions>
           <execution>
