@@ -56,10 +56,10 @@ public class Animator {
 	}
 	public void advanceAllTracks() {
 		for(Entry<String,AnimTrack> e : tracks.entrySet()) {
-			e.getValue().advance_tc(1);
+			e.getValue().advanceFrames(1);
 		}
 	}
 	public void advanceTrack() {
-		track.advance_tc(1);
+		track.advanceFrames(1);
 	}
 }

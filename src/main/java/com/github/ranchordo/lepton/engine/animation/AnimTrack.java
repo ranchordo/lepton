@@ -63,7 +63,7 @@ public class AnimTrack {
 			return;
 		}
 	}
-	public void advance(float n) {
+	public void advanceFloat(float n) {
 		if(animIsDone()) {
 			handleEnd();
 		} else {
@@ -71,9 +71,9 @@ public class AnimTrack {
 		}
 	}
 	private boolean reverse=false;
-	public void advance_tc(int nfr) {
+	public void advanceFrames(int nfr) {
 		if(GLContextInitializer.fr<0) {return;}
-		advance((reverse?-1:1)*nfr*(playbackFPS/GLContextInitializer.fr));
+		advanceFloat((reverse?-1:1)*nfr*(playbackFPS/GLContextInitializer.fr));
 	}
 	public void resetFrameCounter() {
 		counter=0;

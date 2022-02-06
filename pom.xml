@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.github.ranchordo</groupId>
-  <artifactId>com.github.ranchordo.lepton</artifactId>
+  <groupId>io.github.ranchordo</groupId>
+  <artifactId>lepton</artifactId>
   <version>1.0.0</version>
   <name>com.github.ranchordo.lepton</name>
+  <description>A low-level graphics and utility framework designed to make graphics and game development easier.</description>
   <url>https://github.com/ranchordo/lepton</url>
+  <licenses>
+    <license>
+      <name>BSD 3-Clause License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Ray Anchordoquy</name>
+      <email>ranchordo@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/ranchordo/lepton.git</connection>
+    <developerConnection>scm:git:ssh://github.com:ranchordo/lepton.git</developerConnection>
+    <url>https://github.com/ranchordo/lepton/tree/master</url>
+  </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
