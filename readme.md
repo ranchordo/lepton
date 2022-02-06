@@ -5,7 +5,7 @@ A quick note on expectations: Lepton is not a game engine in the way that Unity 
   
 A javadoc for Lepton has been provided in /docs/index.html, and is hosted on github pages [here](https://ranchordo.github.io/lepton/).  
   
-For a quick test of a lepton build or your system or java configuration, you can run the jar included in dist directly, either by double-clicking or by using `java -jar target/lepton-VERSION.jar`. This should open a JFrame-based test terminal in which you can access several test configurations. Further information is available in the terminal's help menu.  
+For a quick test of a lepton build or your system or java configuration, you can run the jar included in dist directly, either by double-clicking or by using `java -jar target/lepton-shaded-VERSION.jar`. This should open a JFrame-based test terminal in which you can access several test configurations. Further information is available in the terminal's help menu.  
   
 The license for LWJGL has been included as /LWJGL-LICENSE.txt because LWJGL binaries are included in the shaded dist jar. No source code from LWJGL has been included. LWJGL-LICENSE is not the license for this project in its entirety. For a license pertaining to Lepton's source code, see /LICENSE.  
   
