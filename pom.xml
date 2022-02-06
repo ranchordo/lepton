@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.ranchordo</groupId>
   <artifactId>lepton</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
   <name>com.github.ranchordo.lepton</name>
   <description>A low-level graphics and utility framework designed to make graphics and game development easier.</description>
   <url>https://github.com/ranchordo/lepton</url>
@@ -246,30 +246,16 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>com.github.goldin</groupId>
-        <artifactId>copy-maven-plugin</artifactId>
-        <version>0.2.5</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
         <executions>
           <execution>
-            <id>deploy-to-local-directory</id>
-            <phase>install</phase>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
             <goals>
-              <goal>copy</goal>
+              <goal>sign</goal>
             </goals>
-            <configuration>
-              <skipIdentical>false</skipIdentical>
-              <failIfNotFound>false</failIfNotFound>
-              <resources>
-                <resource>
-                  <description>Copy jarfiles to dist</description>
-                  <targetPath>${basedir}/dist</targetPath>
-                  <directory>${project.build.directory}</directory>
-                  <includes>
-                    <include>*.jar</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
           </execution>
         </executions>
       </plugin>
