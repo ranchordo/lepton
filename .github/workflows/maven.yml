@@ -26,12 +26,12 @@ jobs:
     - name: Start pulseaudio
       run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -D
     - name: Restart pulseaudio
-      run: pulseaudio -k && sudo pulseaudio --system -D
+      run: pulseaudio -k && pulseaudio -D
     - name: Create virtual audio device
-      run: sudo pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"
+      run: pactl load-module module-null-sink sink_name=DummyOutput sink_properties=device.description="Virtual_Dummy_Output"
     - name: Create and set virtual sink
-      run: sudo pacmd load-module module-virtual-sink sink_name=VirtualSink && sudo pacmd set-default-sink VirtualSink
+      run: pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink
     - name: Print audio info
-      run: aplay -l && sudo pacmd list-sinks
+      run: aplay -l && pacmd list-sinks
     - name: Build with Maven
       run: xvfb-run mvn -B verify --file pom.xml
