@@ -23,7 +23,7 @@ jobs:
     - name: Install mesa stuff
       run: sudo add-apt-repository ppa:kisak/kisak-mesa && sudo apt update && sudo apt upgrade
     - name: Install stuff
-      run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils
+      run: sudo apt install xvfb libasound2 libasound2-plugins alsa-utils alsa-oss pulseaudio pulseaudio-utils expect
     - name: Start pulseaudio
       run: sudo usermod -aG pulse,pulse-access runner && pulseaudio -D
     - name: Restart pulseaudio
@@ -34,9 +34,17 @@ jobs:
       run: pacmd load-module module-virtual-sink sink_name=VirtualSink && pacmd set-default-sink VirtualSink
     - name: Print audio info
       run: aplay -l && pacmd list-sinks
+    - name: Get ~/.m2/settings.xml out of the secret
+      run: mkdir -p ~/.m2 && echo ${{ secrets.M2SETTINGSXML }} > ~/.m2/settings.xml
+    - name: Get gpg key out of the secret
+      run: echo ${{ secrets.GPGPRIVATEB64 }} | base64 -d > ~/priv.txt
+    - name: Import GPG Key
+      run: gpg2 --batch --yes --passphrase "${{ secrets.GPG_PASSPHRASE }}" --import ~/priv.txt && expect -c 'spawn gpg2 --edit-key ${{ secrets.KEYID }} trust quit; send "5\ry\r"; expect eof'
     - name: Build with Maven
       run: xvfb-run mvn -B package --file pom.xml
     - name: Set version stuff
       run: xvfb-run mvn -B versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }} --file pom.xml
     - name: Execute the deployment
       run: xvfb-run mvn -B clean verify deploy --file pom.xml
+    - name: Remove ~/.m2/settings.xml and gpg key
+      run: rm ~/.m2/settings.xml && rm ~/priv.txt
