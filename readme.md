@@ -1,5 +1,6 @@
 ## Lepton: A low-level graphics and utility framework  
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.ranchordo/lepton.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.ranchordo%22%20AND%20a:%22lepton%22)  
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.ranchordo/lepton.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.ranchordo%22%20AND%20a:%22lepton%22)
+[![CI Passing](https://github.com/ranchordo/lepton/actions/workflows/maven.yml/badge.svg)](https://github.com/ranchordo/lepton/actions/workflows/maven.yml)  
 Lepton is an LWJGL-based java library for optimization, GPU parallel computing, 3d rendering, and other features you would expect in a low-level game engine, like a physics engine (based on [JBullet](http://jbullet.advel.cz)), audio rendering, 3d animation, a wavefront (.obj) geometry loader, and much more.  
   
 A quick note on expectations: Lepton is not a game engine in the way that Unity or Unreal Engine are game engines. Lepton is a library for providing a higher-level interface with OpenGL's, OpenAL's, and JBullet's functionality by managing their features through higher-level classes with more intuitive functionality and by making connections between them easier. Lepton also provides some utilities for optimization and parallel computing.  
