@@ -25,9 +25,9 @@ Lepton is now available in the Nexus central repository! You can include it with
 <dependency>
   <groupId>io.github.ranchordo</groupId>
   <artifactId>lepton</artifactId>
-  <version>1.0.2</version>
+  <version>VERSION</version>
 </dependency>
 ```
 into your pom.xml in the `dependencies` block, or gradle by adding  
-`implementation 'io.github.ranchordo:lepton:1.0.2'`  
+`implementation 'io.github.ranchordo:lepton:VERSION'`  
 As a dependency, or to many other build managers by clicking on the Maven Central badge and then clicking on the package and getting the appropriate addition syntax.
