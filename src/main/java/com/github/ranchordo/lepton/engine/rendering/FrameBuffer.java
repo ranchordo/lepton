@@ -15,10 +15,10 @@ import com.github.ranchordo.lepton.util.advancedLogger.Logger;
  * Can contain multiple color buffers, but can only contain one depth and stencil buffer. 
  */
 public class FrameBuffer extends Deletable {
-	public static final int FRAMEBUFFER=0, DEPTHBUFFER=1, TEXTUREBUFFER=2;
+	public static final int FRAMEBUFFER=0, RENDERBUFFER=1, TEXTUREBUFFER=2;
 	private int fbo;
 	private int[] tbo;
-	private int dbo;
+	private int rbo;
 	private int multiSample=-1;
 	private int[] attachList;
 	private int format;
@@ -30,8 +30,8 @@ public class FrameBuffer extends Deletable {
 		switch(id) {
 		case FRAMEBUFFER:
 			return fbo;
-		case DEPTHBUFFER:
-			return dbo;
+		case RENDERBUFFER:
+			return rbo;
 		case TEXTUREBUFFER:
 			return tbo[secID];
 		default:
@@ -42,7 +42,7 @@ public class FrameBuffer extends Deletable {
 	 * ms is multisample. For MSAA (MultiSample AntiAliasing, used to remove jagged edges).
 	 */
 	public FrameBuffer(int ms) {
-		this(ms,1,GL_RGBA16F);
+		this(ms,1,GL_RGBA16F,true);
 	}
 	public void setNumTexBuffers(int ntbo) {
 		if(!flexibleBuffers) {
@@ -65,11 +65,14 @@ public class FrameBuffer extends Deletable {
 		}
 		return tbo;
 	}
+	public FrameBuffer(int ms, int ntbo, int format) {
+		this(ms,ntbo,format,true);
+	}
 	private boolean flexibleBuffers=false;
 	/**
 	 * ms is multisample for MSAA (MultiSample AntiAliasing, used to remove jagged edges). ntbo is the Number of TBOs. Format is the storage format. Defaults to GL_RGBA16F. Other useful ones are GL_RGBA8
 	 */
-	public FrameBuffer(int ms, int ntbo, int format) {
+	public FrameBuffer(int ms, int ntbo, int format, boolean useRBO) {
 		try(MemoryStack stack=MemoryStack.stackPush()){
 			IntBuffer m=stack.mallocInt(1);
 			glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS,m);
@@ -103,32 +106,18 @@ public class FrameBuffer extends Deletable {
 				attachList[i]=GL_COLOR_ATTACHMENT0+i;
 			}
 		}
-		dbo=glGenTextures();
-		glBindTexture(texParam,dbo);
-		if(ms>0) {
-			glTexStorage2DMultisample(texParam,ms,GL_DEPTH_COMPONENT24,GLContextInitializer.winW,GLContextInitializer.winH,true);
-		} else {
-			glTexStorage2D(texParam,1,GL_DEPTH_COMPONENT24,GLContextInitializer.winW,GLContextInitializer.winH);
-		}
 		this.format=format;
-		glTexParameteri(texParam,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(texParam,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-		glTexParameteri(texParam,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-	    glTexParameteri(texParam,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-	    
-	    glTexParameteri(texParam,GL_TEXTURE_COMPARE_MODE,GL_COMPARE_REF_TO_TEXTURE);
-	    glTexParameteri(texParam,GL_TEXTURE_COMPARE_MODE,GL_LEQUAL);
-		
-		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,texParam,dbo,0);
-//		rbo=glGenRenderbuffers();
-//		glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
-//		if(ms>0) {
-//			glRenderbufferStorageMultisample(GL_RENDERBUFFER,ms,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
-//		} else {
-//			glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
-//		}
-//		
-//		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,rbo);
+		if(useRBO) {
+		rbo=glGenRenderbuffers();
+			glBindRenderbuffer(GL_RENDERBUFFER,rbo); 
+			if(ms>0) {
+				glRenderbufferStorageMultisample(GL_RENDERBUFFER,ms,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+			} else {
+				glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,GLContextInitializer.winW,GLContextInitializer.winH);
+			}
+			
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,rbo);
+		}
 				
 		if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE) {
 			Logger.log(3,glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -136,7 +125,7 @@ public class FrameBuffer extends Deletable {
 		}
 		glBindTexture(texParam,0);
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-//		glBindRenderbuffer(GL_RENDERBUFFER,0);
+		glBindRenderbuffer(GL_RENDERBUFFER,0);
 		adrt();
 	}
 	/**
@@ -145,7 +134,7 @@ public class FrameBuffer extends Deletable {
 	public void delete() {
 		glDeleteFramebuffers(fbo);
 		glDeleteTextures(tbo);
-//		glDeleteRenderbuffers(rbo);
+		glDeleteRenderbuffers(rbo);
 		rdrt();
 	}
 	/**
@@ -160,13 +149,6 @@ public class FrameBuffer extends Deletable {
 	public void bindTexture(int id, int binding) {
 		glActiveTexture(GL_TEXTURE0+binding);
 		glBindTexture(multiSample>0?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D,tbo[id]);
-	}
-	/**
-	 * Bind dbo to a texture on texture unit "binding".
-	 */
-	public void bindDepthTexture(int binding) {
-		glActiveTexture(GL_TEXTURE0+binding);
-		glBindTexture(multiSample>0?GL_TEXTURE_2D_MULTISAMPLE:GL_TEXTURE_2D,dbo);
 	}
 	/**
 	 * Blit (AKA copy) this framebuffer to another (this.tbos[0] to target.tbos[0]).

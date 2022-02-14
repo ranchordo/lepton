@@ -3,11 +3,14 @@ package com.github.ranchordo.lepton.engine.graphics2d.tiles;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import javax.vecmath.Vector2d;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
+
+import org.lwjgl.opengl.GL15;
 
 import com.github.ranchordo.lepton.engine.rendering.GLContextInitializer;
 import com.github.ranchordo.lepton.engine.rendering.GObject;
@@ -16,6 +19,21 @@ import com.github.ranchordo.lepton.engine.rendering.instanced.InstancedRenderer;
 import com.github.ranchordo.lepton.util.InputHandler;
 
 public abstract class Tile2d {
+	public static Consumer<Void> simpleWrapNonRenderer(Tile2d... tiles) {
+		InstancedRenderer.InstancedRenderRoutine routine=new InstancedRenderer.InstancedRenderRoutine() {
+			public Tile2d[] t=tiles;
+			@Override public void run() {
+				for(Tile2d tl : t) {
+					tl.render();
+				}
+			}
+		};
+		return ((v)->{
+			GL15.glDisable(GL15.GL_DEPTH_TEST);
+			Tile2d.renderer.renderInstanced(routine);
+			GL15.glEnable(GL15.GL_DEPTH_TEST);
+		});
+	}
 	/**
 	 * For those little 2d engine induced aneurisms. Will force all builtin tiles to render in a definitely visible location (no shader replacement, do that yourself).
 	 */

@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 import java.io.FileNotFoundException;
 import java.nio.FloatBuffer;
+import java.util.function.Consumer;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix4f;
@@ -14,6 +15,8 @@ import org.lwjgl.BufferUtils;
 
 import com.bulletphysics.linearmath.Transform;
 import com.github.ranchordo.lepton.engine.audio.Audio;
+import com.github.ranchordo.lepton.engine.graphics2d.tiles.TextGroup;
+import com.github.ranchordo.lepton.engine.graphics2d.tiles.Tile2d;
 import com.github.ranchordo.lepton.engine.graphics2d.util.Fonts;
 import com.github.ranchordo.lepton.engine.physics.PhysicsWorld;
 import com.github.ranchordo.lepton.engine.rendering.FrameBuffer;
@@ -21,6 +24,7 @@ import com.github.ranchordo.lepton.engine.rendering.GLContextInitializer;
 import com.github.ranchordo.lepton.engine.rendering.Shader;
 import com.github.ranchordo.lepton.engine.rendering.TextureImage;
 import com.github.ranchordo.lepton.engine.rendering.instanced.InstanceAccumulator;
+import com.github.ranchordo.lepton.engine.rendering.instanced.InstancedRenderer;
 import com.github.ranchordo.lepton.engine.rendering.lighting.BloomHandler;
 import com.github.ranchordo.lepton.engine.rendering.lighting.Light;
 import com.github.ranchordo.lepton.engine.rendering.lighting.Lighting;
@@ -88,10 +92,12 @@ public class FancyGraphicsTest {
 		Shader clear=new Shader("fancyTest/clear");
 		Shader deferred=new Shader("fancyTest/deferred");
 		Shader SSR=new Shader("fancyTest/SSR");
+		Shader screen_basic=new Shader("screen_basic");
 		FrameBuffer fbo=new FrameBuffer(16,5,GL_RGBA16F);
-		FrameBuffer deferredout=new FrameBuffer(16,2,GL_RGBA16F);
+		FrameBuffer deferredout=new FrameBuffer(16,2,GL_RGBA16F,false);
 		FrameBuffer noms=new FrameBuffer(0,4,GL_RGBA16F);
-		FrameBuffer blur=new FrameBuffer(0,1,GL_RGBA16F);
+		FrameBuffer blur=new FrameBuffer(0,1,GL_RGBA16F,false);
+		FrameBuffer temp=new FrameBuffer(0,1,GL_RGBA16F,false);
 		
 		float exposure=2.9f;
 		float gamma=0.6f;
@@ -212,7 +218,21 @@ public class FancyGraphicsTest {
 		}
 		int fcc=0;
 		boolean showDebugScreen=false;
-		
+		int showbuffer=0;
+		boolean interGLFinish=false;
+		String[] bufferNames= {
+				"Final composite",
+				"Albedo",
+				"Specular",
+				"Roughness",
+				"gPosition",
+				"gNormal",
+				"Deferred lighting pass",
+				"SSR Out",
+				"Bloom blur",
+				"Other objects"};
+		Tile2d textgroup=new TextGroup(bufferNames[showbuffer],fonts.get("consolas"),0.95f,-1,0.05f,1,1,1,Tile2d.renderer).setAsParent().setPosMode(Tile2d.PosMode.BOTTOM_RIGHT).initThis();
+		Consumer<Void> textgroupRenderer=Tile2d.simpleWrapNonRenderer(textgroup);
 		Logger.log(0,"Initialization done. Ready for main loop.");
 		while(!glfwWindowShouldClose(GLContextInitializer.win)) {
 			GLContextInitializer.timeCalcStart();
@@ -232,7 +252,19 @@ public class FancyGraphicsTest {
 			if(h.ir(GLFW_KEY_F3)) {
 				showDebugScreen=!showDebugScreen;
 			}
-			
+			if(h.ir(GLFW_KEY_F)) {
+				showbuffer++;
+				showbuffer=showbuffer%10;
+				((TextGroup)textgroup).setString(bufferNames[showbuffer]);
+			}
+			if(h.ir(GLFW_KEY_D)) {
+				showbuffer--;
+				showbuffer=(showbuffer+10)%10;
+				((TextGroup)textgroup).setString(bufferNames[showbuffer]);
+			}
+			if(h.ir(GLFW_KEY_A)) {
+				interGLFinish=!interGLFinish;
+			}
 			
 			//Just clear the stuff
 			noms.bind();
@@ -244,6 +276,7 @@ public class FancyGraphicsTest {
 			glClearColor(0,0,0,1);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			GLContextInitializer.defaultScreen.render();
+			if(interGLFinish) glFinish();
 			tp.stop(0);
 			
 			//Main render step
@@ -259,7 +292,12 @@ public class FancyGraphicsTest {
 			fbo.bindTexture(2,2);
 			fbo.bindTexture(3,3);
 			fbo.bindTexture(4,4);
+			if(interGLFinish) glFinish();
 			tp.stop(1);
+			
+			if(showbuffer<=5&&showbuffer>0) {
+				fbo.blitTo(temp,showbuffer-1,0);
+			}
 			
 			//Lighting and composition step (deferred)
 			tp.start(2);
@@ -276,13 +314,22 @@ public class FancyGraphicsTest {
 			deferred.setUniform4f("fog_color",0,0.15f,0.15f,1);
 			deferred.setUniform4f("altLightingValue",2,2,2,1);
 			GLContextInitializer.defaultScreen.render();
+			if(interGLFinish) glFinish();
 			tp.stop(2);
+			
+			if(showbuffer==6) {
+				deferredout.blitTo(temp,0,0);
+			}
 			
 			//Bloom->blur step
 			tp.start(3);
 			deferredout.blitTo(blur,1,0);
 			BloomHandler.blur(blur,bloom_iterations);
 			tp.stop(3);
+			
+			if(showbuffer==8) {
+				blur.blitTo(temp,0,0);
+			}
 			
 			//SSR step
 			tp.start(4);
@@ -300,7 +347,12 @@ public class FancyGraphicsTest {
 			noms.bindTexture(3,3);
 			GLContextInitializer.activeShader.setUniformMatrix4fv("world2view",fm);
 			GLContextInitializer.defaultScreen.render();
+			if(interGLFinish) glFinish();
 			tp.stop(4);
+			
+			if(showbuffer==7) {
+				noms.blitTo(temp,0,0);
+			}
 			
 			tp.start(5);
 			glColorMask(false,false,false,false); //Render to depth buffer
@@ -316,7 +368,12 @@ public class FancyGraphicsTest {
 			wall2.render();
 			glDepthMask(true);
 //			Lighting.renderDebug();
+			if(interGLFinish) glFinish();
 			tp.stop(5);
+			
+			if(showbuffer==9) {
+				noms.blitTo(temp,0,0);
+			}
 			
 			//Final compositing step
 			tp.start(6);
@@ -329,12 +386,22 @@ public class FancyGraphicsTest {
 			finalComposite.setSamplersDefault(3);
 			noms.unbind();
 			GLContextInitializer.defaultScreen.render();
+			//Done rendering
+			
+			if(showbuffer!=0) {
+				temp.bindTexture(0);
+				screen_basic.bind();
+				GLContextInitializer.defaultScreen.render();
+			}
+			
+			textgroup.logic();
+			textgroupRenderer.accept(null);
 			if(showDebugScreen) {
 				screen.logic();
 				screen.render();
 			}
+			if(interGLFinish) glFinish();
 			tp.stop(6);
-			//Done rendering
 			
 			fcc++;
 			if(fcc%500==0) {
