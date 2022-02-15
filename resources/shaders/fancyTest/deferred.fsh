@@ -25,6 +25,10 @@ uniform float useFog=0;
 uniform vec4 fog_color=vec4(1,0,1,1);
 uniform vec4 altLightingValue=vec4(1,1,1,1);
 
+float square(float x) {
+	return x*x;
+}
+
 uniform sampler2DMS sampler0;
 uniform sampler2DMS sampler1;
 uniform sampler2DMS sampler2;
@@ -57,10 +61,10 @@ void main() {
 			intensity_in=intensity_in+vec4(light.l_intensity.xyz*spec*material_v.x,0);
 		} else if(round(light.type)==3) {
 			//Positional light
-			float r=sqrt(pow(world_position.x-light.prop.x,2)+pow(world_position.y-light.prop.y,2)+pow(world_position.z-light.prop.z,2));
+			float rsquared=square(world_position.x-light.prop.x)+square(world_position.y-light.prop.y)+square(world_position.z-light.prop.z);
 			vec3 lightVector=normalize(world_position-light.prop);
 			float dotprod=max(0.0,-dot(norm,lightVector));
-			intensity_in=intensity_in+vec4(light.l_intensity.xyz*dotprod*(1.0/pow(r,2)),0);
+			intensity_in=intensity_in+vec4(light.l_intensity.xyz*dotprod*(1.0/rsquared),0);
 			
 			vec3 viewdir=normalize(campos-world_position);
 			//vec3 reflectdir=reflect(-lightVector,norm);
