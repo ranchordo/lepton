@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.ranchordo</groupId>
   <artifactId>lepton</artifactId>
-  <version>1.0.2</version>
-  <name>com.github.ranchordo.lepton</name>
+  <version>1.0.4</version>
+  <name>Lepton</name>
   <description>A low-level graphics and utility framework designed to make graphics and game development easier.</description>
   <url>https://github.com/ranchordo/lepton</url>
   <licenses>
