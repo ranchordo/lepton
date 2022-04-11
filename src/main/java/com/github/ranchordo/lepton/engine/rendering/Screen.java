@@ -50,6 +50,7 @@ public class Screen {
 	FloatBuffer fm=BufferUtils.createFloatBuffer(16);
 	public void render() {
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(false);
 		LeptonUtil.openGLMatrix(GLContextInitializer.proj_matrix,mma);
 		fm=LeptonUtil.asFloatBuffer(mma,fm);
 		GLContextInitializer.activeShader.setUniformMatrix4fv("proj_matrix",fm);
@@ -63,6 +64,7 @@ public class Screen {
 		glDrawArrays(GL_TRIANGLES,0,2*3);
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(8);
+		glDepthMask(true);
 		glEnable(GL_DEPTH_TEST);
 	}
 }

@@ -26,6 +26,10 @@ public class DefaultParticleSystem {
 	private int r;
 	private GObject geo;
 	private int power=1;
+	private boolean doRender;
+	private SSBO ssbo;
+	public SSBO getSSBO() {return ssbo;}
+	public int getActualNumParticles() {return (int)Math.pow(n,power);}
 	public Vector3f getOrigin() {
 		return origin;
 	}
@@ -44,9 +48,9 @@ public class DefaultParticleSystem {
 	public void setVi(float x, float y, float z) {
 		vi.set(x,y,z);
 	}
-	public DefaultParticleSystem(String computeShaderName, String renderShaderName, String bufferName, int maxNumParticles, int particlesPerSecond, int floatsPerParticle) {
+	public DefaultParticleSystem(String computeShaderName, String renderShaderName, String bufferName, int maxNumParticles, int particlesPerSecond, int floatsPerParticle, boolean doRender) {
 		cpsh=GLContextInitializer.cpshLoader.load(computeShaderName);
-		renderingShader=GLContextInitializer.shaderLoader.load(renderShaderName);
+		if(doRender) {renderingShader=GLContextInitializer.shaderLoader.load(renderShaderName);}
 		n=maxNumParticles;
 		if(n>=100000000) { //I hope we never hit this
 			power=3;
@@ -56,12 +60,16 @@ public class DefaultParticleSystem {
 			n=(int)Math.round(Math.pow(n,1.0/power));
 		}
 		r=particlesPerSecond;
-		renderingShader.generateFromExistingSSBO(bufferName,cpsh.generateNewSSBO(bufferName,4*floatsPerParticle*(int)Math.pow(n,power)));
-		geo=Tile2d.createGenericSquare();
-		geo.instances=(int)Math.pow(n,power);
+		this.doRender=doRender;
+		this.ssbo=cpsh.generateNewSSBO(bufferName,4*floatsPerParticle*(int)Math.pow(n,power));
+		if(doRender) {
+			renderingShader.generateFromExistingSSBO(bufferName,ssbo);
+			geo=Tile2d.createGenericSquare();
+			geo.instances=(int)Math.pow(n,power);
+		}
 	}
 	public DefaultParticleSystem(int maxNumParticles, int particlesPerSecond) {
-		this("particleDefault","specific/particleDefaultRender","particles_buffer",maxNumParticles,particlesPerSecond,8);
+		this("particleDefault","specific/particleDefaultRender","particles_buffer",maxNumParticles,particlesPerSecond,8,true);
 	}
 	private long micros=0;
 	private int pparticles=0;
@@ -101,19 +109,20 @@ public class DefaultParticleSystem {
 			Logger.log(4,"Power is "+power+". What the heck?");
 		}
 		pparticles=particlesTotal;
-		
-		renderingShader.bind();
-		mmc.set(GLContextInitializer.cameraTransform);
-		mmc.getOpenGLMatrix(mma);
-		fm=LeptonUtil.asFloatBuffer(mma,fm);
-		GLContextInitializer.activeShader.setUniformMatrix4fv("world2view",fm);
-		LeptonUtil.openGLMatrix(GLContextInitializer.proj_matrix,mma);
-		fm=LeptonUtil.asFloatBuffer(mma,fm);
-		renderingShader.setUniformMatrix4fv("proj_matrix",fm);
-		renderingShader.setUniform1f("time",t);
-		renderingShader.applyAllSSBOs();
-		GL15.glDepthMask(false);
-		geo.render_raw();
-		GL15.glDepthMask(true);
+		if(doRender) {
+			renderingShader.bind();
+			mmc.set(GLContextInitializer.cameraTransform);
+			mmc.getOpenGLMatrix(mma);
+			fm=LeptonUtil.asFloatBuffer(mma,fm);
+			GLContextInitializer.activeShader.setUniformMatrix4fv("world2view",fm);
+			LeptonUtil.openGLMatrix(GLContextInitializer.proj_matrix,mma);
+			fm=LeptonUtil.asFloatBuffer(mma,fm);
+			renderingShader.setUniformMatrix4fv("proj_matrix",fm);
+			renderingShader.setUniform1f("time",t);
+			renderingShader.applyAllSSBOs();
+			GL15.glDepthMask(false);
+			geo.render_raw();
+			GL15.glDepthMask(true);
+		}
 	}
 }

@@ -2,6 +2,7 @@ package com.github.ranchordo.lepton.cpshlib;
 
 import static org.lwjgl.opengl.GL44.*;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -195,13 +196,22 @@ public abstract class ShaderDataCompatible extends Deletable {
 	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
 	 */
 	public static FloatBuffer mappify(int buffer, int mode) {
+		return mappify(GL_SHADER_STORAGE_BUFFER, buffer, mode);
+	}
+	/**
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
+	 */
+	public static FloatBuffer mappify(int type, int buffer, int mode) {
+		return mappifyBytes(type, buffer, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
+	}
+	public static ByteBuffer mappifyBytes(int type, int buffer, int mode) {
 		if(bufferMapped) {
 			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer when you're done. Is it really that difficult?");
 		}
-		FloatBuffer ret=null;
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER,buffer);
+		ByteBuffer ret=null;
+		glBindBuffer(type,buffer);
 		try {
-			ret=glMapBuffer(GL_SHADER_STORAGE_BUFFER, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			ret=glMapBuffer(type, mode);
 			bufferMapped=true;
 		} catch (NullPointerException e) {
 			Logger.log(4,"Buffer map failure");
@@ -212,13 +222,25 @@ public abstract class ShaderDataCompatible extends Deletable {
 	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
 	 */
 	public static FloatBuffer mappifyRange(int buffer, int mode, long offset, int length) {
+		return mappifyRange(GL_SHADER_STORAGE_BUFFER, buffer, mode, offset, length);
+	}
+	/**
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
+	 */
+	public static FloatBuffer mappifyRange(int type, int buffer, int mode, long offset, int length) {
+		return mappifyRangeBytes(type, buffer, mode, offset, length).order(ByteOrder.nativeOrder()).asFloatBuffer();
+	}
+	/**
+	 * Map a buffer in GPU-side storage to CPU-accessible storage object for modification from CPU-side code. *****MAKE SURE TO CALL unMappify() AFTERWARDS*****
+	 */
+	public static ByteBuffer mappifyRangeBytes(int type, int buffer, int mode, long offset, int length) {
 		if(bufferMapped) {
 			Logger.log(4,"We got a HUUUGE resource leak here. Unmap the buffer when you're done. Is it really that difficult?");
 		}
-		FloatBuffer ret=null;
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER,buffer);
+		ByteBuffer ret=null;
+		glBindBuffer(type,buffer);
 		try {
-			ret=glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, length, mode).order(ByteOrder.nativeOrder()).asFloatBuffer();
+			ret=glMapBufferRange(type, offset, length, mode);
 			bufferMapped=true;
 		} catch (NullPointerException e) {
 			Logger.log(4,"Buffer map failure");
@@ -229,7 +251,13 @@ public abstract class ShaderDataCompatible extends Deletable {
 	 * Unmap active mapped GPU-side buffer.
 	 */
 	public static void unMappify() {
-		if(!glUnmapBuffer(GL_SHADER_STORAGE_BUFFER)) {
+		unMappify(GL_SHADER_STORAGE_BUFFER);
+	}
+	/**
+	 * Unmap active mapped GPU-side buffer.
+	 */
+	public static void unMappify(int type) {
+		if(!glUnmapBuffer(type)) {
 			Logger.log(4,"Buffer unmap failure");
 		}
 		bufferMapped=false;
@@ -285,7 +313,7 @@ public abstract class ShaderDataCompatible extends Deletable {
 		int ret=glGetUniformLocation(program(),name);
 		locationCache.put(name,ret);
 		if(ret==-1) {
-			Logger.log(2,name+" is not a valid shader uniform ("+initialFname+")");
+			if(!IGNORE_MISSING) {Logger.log(2,name+" is not a valid shader uniform ("+initialFname+")");}
 		}
 		return ret;
 	}
@@ -293,16 +321,12 @@ public abstract class ShaderDataCompatible extends Deletable {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform1f(location,value);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform1i(String name, int value) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform1i(location,value);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform3f(String name, Vector3f in) {
@@ -312,48 +336,36 @@ public abstract class ShaderDataCompatible extends Deletable {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform3f(location,x,y,z);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform2f(String name, float x, float y) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform2f(location,x,y);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform4f(String name, float x, float y, float z, float w) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform4f(location,x,y,z,w);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform3fv(String name, FloatBuffer d) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform3fv(location, d);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniformiv(String name, IntBuffer d) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform1iv(location, d);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniform4fv(String name, FloatBuffer d) {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniform4fv(location, d);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 	public void setUniformMatrix4fv(String name, FloatBuffer b) {
@@ -363,8 +375,6 @@ public abstract class ShaderDataCompatible extends Deletable {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniformMatrix4fv(location, transpose, b);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 
@@ -372,8 +382,6 @@ public abstract class ShaderDataCompatible extends Deletable {
 		int location=getUniformLocation(name);
 		if(location!=-1) {
 			glUniformMatrix3fv(location, false, b);
-		} else {
-			if(!IGNORE_MISSING) {Logger.log(3,name+" is not a valid shader uniform");}
 		}
 	}
 }

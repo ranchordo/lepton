@@ -1,0 +1,56 @@
+#version 430 core
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+uniform vec3 invocation_dimensions=vec3(0);
+struct Particle {
+	vec4 p;
+	vec4 v;
+};
+layout (std140) buffer particles_buffer {
+	Particle particles[];
+};
+
+uniform vec3 origin;
+uniform int toemit;
+uniform int stindex;
+uniform float time;
+uniform float dt;
+uniform vec3 Vi;
+
+float rand(float fli) {
+    uint i=uint(fli);
+    i^=2747636419u;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    i^=i>>16;
+    i*=2654435769u;
+    return fract(float(i)/4294967295.0);
+}
+
+void main() {
+	int particleID=int(gl_GlobalInvocationID.x+(invocation_dimensions.x*gl_GlobalInvocationID.y)+(invocation_dimensions.x*invocation_dimensions.y*gl_GlobalInvocationID.z));
+	int nparticles=int(invocation_dimensions.x*invocation_dimensions.y*invocation_dimensions.z);
+	particles[particleID].p+=particles[particleID].v*dt;
+	float tf=time*1000000.0;
+	bool heating=particles[particleID].p.y<0.9;
+	particles[particleID].v.w+=0.005*int(heating)-0.002;
+	particles[particleID].v.w=max(min(1, particles[particleID].v.w),0);
+	bool needsRadialPush=length(particles[particleID].p.xz)>2;
+	particles[particleID].v.xz-=int(needsRadialPush)*0.01*particles[particleID].p.xz;
+	bool needsVerticalPush=particles[particleID].p.y<0;
+	particles[particleID].v.y-=int(needsVerticalPush)*0.04*particles[particleID].p.y;
+	bool needsDownPush=particles[particleID].p.y>8;
+	particles[particleID].v.y-=int(needsDownPush)*0.015*particles[particleID].p.y;
+	particles[particleID].v+=0.08*particles[particleID].v.y*vec4(rand(particleID+5+tf)*2-1,rand(particleID+4+tf)*2-1,rand(particleID+3+tf)*2-1,0)+0.006*particles[particleID].v.w*vec4(0,1,0,0)+0.0006*vec4(0,-1,0,0);
+	particles[particleID].v.xyz-=particles[particleID].v.xyz*abs(particles[particleID].v.xyz)*0.01;
+	
+	//Handle emission:
+	int a=stindex;
+	int b=int(mod(stindex+toemit,nparticles));
+	bool reEmit=((particleID>=min(a,b)) && (particleID<max(a,b))) ^^ (b<a);
+	
+	particles[particleID].p=(int(!reEmit)*particles[particleID].p)+(int(reEmit)*vec4(origin,time));
+	particles[particleID].v=(int(!reEmit)*particles[particleID].v)+(int(reEmit)*vec4(0,0,0,0));//rand(particleID+tf)));
+}

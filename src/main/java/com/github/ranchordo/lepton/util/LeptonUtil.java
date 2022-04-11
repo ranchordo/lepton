@@ -19,6 +19,7 @@ import javax.vecmath.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import com.bulletphysics.linearmath.Transform;
+import com.github.ranchordo.lepton.engine.rendering.GLContextInitializer;
 import com.github.ranchordo.lepton.optim.objpoollib.DefaultVecmathPools;
 import com.github.ranchordo.lepton.optim.objpoollib.PoolElement;
 import com.github.ranchordo.lepton.util.advancedLogger.Logger;
@@ -68,6 +69,15 @@ public class LeptonUtil {
 	private static Random rand=new Random();
 	public static int randint(int max) {
 		return rand.nextInt(max);
+	}
+	
+
+	private static float[] mma=new float[16];
+	private static FloatBuffer fm=BufferUtils.createFloatBuffer(16);
+	public static void setShaderUniformTransform(String name, Transform mmc) {
+		mmc.getOpenGLMatrix(mma);
+		fm=LeptonUtil.asFloatBuffer(mma,fm);
+		GLContextInitializer.activeShader.setUniformMatrix4fv(name,fm);
 	}
 	/**
 	 * Quat() function but just return the AxisAngle4f and hold the pool functionality. Slower, uses reflection, and creates stuff to garbage collect.
@@ -244,5 +254,33 @@ public class LeptonUtil {
 	 */
 	public static long micros() {
 		return System.nanoTime()/1000l;
+	}
+	
+	public static class MiscShaderConstant {
+		private String name;
+		private float value;
+		private float speed;
+		private InputHandler ih;
+		private int[] keys= {0,0};
+		public MiscShaderConstant(String name, float initValue, float speed, InputHandler ih, int key1, int key2) {
+			this.name=name;
+			this.value=initValue;
+			this.speed=speed;
+			this.ih=ih;
+			this.keys[0]=key1;
+			this.keys[1]=key2;
+		}
+		public void processAndSet() {
+			if(ih.i(this.keys[0])) {
+				this.value+=speed;
+			}
+			if(ih.i(this.keys[1])) {
+				this.value-=speed;
+			}
+			GLContextInitializer.activeShader.setUniform1f(this.name, this.value);
+		}
+		public float getValue() {
+			return value;
+		}
 	}
 }

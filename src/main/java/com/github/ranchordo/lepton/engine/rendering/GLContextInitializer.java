@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
+import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix4f;
+import javax.vecmath.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -41,7 +43,8 @@ public class GLContextInitializer {
 	 * Default graphical rendering shader.
 	 */
 	public static Shader defaultMainShader=null;
-	public static Transform cameraTransform;
+	public static Transform cameraTransform=new Transform(new Matrix4f(
+			LeptonUtil.AxisAngle_np(new AxisAngle4f(1,0,0,0)), new Vector3f(0,0,0), 1.0f));
 	public static boolean useGraphics=true;
 	/**
 	 * FrameRate
